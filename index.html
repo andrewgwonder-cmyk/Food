@@ -260,6 +260,7 @@ const IC={
 
 /* ========== хранилище ========== */
 const KEY='racion.v1';
+const APP_VERSION='3';
 function blank(){return{v:1,profile:null,goal:{rate:0.5,target:null,prot:1.8,fatPct:28,ov:{},eatBack:100},voyage:null,weights:{},days:{},foods:[],recipes:[],templates:[],settings:{usdaKey:'',lastBackup:null,created:today()}}}
 function normalize(o){const b=blank();o=Object.assign(b,o||{});o.goal=Object.assign(blank().goal,o.goal||{});o.goal.ov=o.goal.ov||{};o.settings=Object.assign(blank().settings,o.settings||{});
   for(const k in o.days){const d=o.days[k];d.m=Object.assign({b:[],l:[],d:[],s:[]},d.m||{});d.ex=d.ex||[]}return o}
@@ -567,7 +568,7 @@ function viewMore(){
   <div class="sec menu">${it('myFoods','Мои продукты',S.foods.length+' '+plural(S.foods.length,'продукт','продукта','продуктов'))}${it('rcpList','Рецепты и блюда',S.recipes.length+' '+plural(S.recipes.length,'рецепт','рецепта','рецептов'))}</div>
   <div class="sec menu">${it('profOpen','Профиль','Пол, дата рождения, рост, активность')}${it('backupOpen','Резервная копия',S.settings.lastBackup?'последняя '+fDate(S.settings.lastBackup):'ещё не делалась')}${it('onlineOpen','Онлайн-базы продуктов','USDA и Open Food Facts')}${it('installOpen','Установка на iPhone','')}${it('aboutOpen','Как считается','Формулы и источники')}</div>
   <div class="sec menu">${it('wipeOpen','Удалить все данные','')}</div>
-  <p class="help" style="text-align:center;margin:18px 0">Рацион · данные только на этом телефоне</p>`;
+  <p class="help" style="text-align:center;margin:18px 0">Рацион · версия ${APP_VERSION} · ${BASE.length} продуктов в базе<br>Данные только на этом телефоне</p>`;
 }
 
 /* ========== листы ========== */
@@ -937,7 +938,7 @@ document.addEventListener('change',e=>{if(e.target.id==='g-t'){const v=num(e.tar
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.profile&&!V.sheets.length){render()}});
 
 render();
-if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(()=>{})}
 </script>
 </body>
 </html>
