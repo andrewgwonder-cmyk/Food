@@ -1,5 +1,5 @@
 // Офлайн-кэш приложения. При обновлении файлов увеличьте номер версии.
-const VERSION = 'racion-v1';
+const VERSION = 'racion-v2';
 const FILES = ['./', './index.html', './foods.js', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

@@ -322,14 +322,14 @@ function walkMet(kmh){return kmh<3.2?2.3:kmh<4?2.8:kmh<4.5?3.0:kmh<5.6?3.8:kmh<6
 const exKcal=(met,kg,min)=>Math.max(0,(met-1)*kg*min/60);
 
 /* ========== продукты ========== */
-const BASE=(window.BASE_FOODS||[]).map((a,i)=>({id:'b'+i,n:a[0],en:a[1],x:{k:a[2],p:a[3],f:a[4],c:a[5],fb:a[6]},srv:a[7]||[],src:'base'}));
+const BASE=(window.BASE_FOODS||[]).map((a,i)=>({id:'b'+i,n:a[0],en:a[1],x:{k:a[2],p:a[3],f:a[4],c:a[5],fb:a[6]},srv:a[7]||[],src:'base',note:a[8]||''}));
 const SRC={base:'база',my:'мой',rcp:'рецепт',usda:'USDA',off:'OFF',quick:'быстро'};
 function myFoods(){return S.foods.map(f=>Object.assign({src:'my'},f,{srcOrig:f.src}))}
 function rcpAsFood(r){const t=rcpTotals(r);const wt=r.cooked||t.g||1;const per=wt/(r.servings||1);
   return{id:r.id,n:r.n,x:{k:t.n.k/wt*100,p:t.n.p/wt*100,f:t.n.f/wt*100,c:t.n.c/wt*100,fb:t.n.fb/wt*100},srv:[['1 порция',r1(per)]],src:'rcp'}}
 function rcpTotals(r){const n=N0();let g=0;for(const i of r.items){addN(n,entN(i));g+=i.g}return{n,g}}
 function findFood(src,id){if(src==='base')return BASE.find(f=>f.id===id);if(src==='rcp'){const r=S.recipes.find(x=>x.id===id);return r&&rcpAsFood(r)}return myFoods().find(f=>f.id===id)}
-const normq=s=>String(s||'').toLowerCase().replace(/ё/g,'е');
+const normq=s=>String(s||'').toLowerCase().replace(/ё/g,'е').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 function searchLocal(q,scope){
   const words=normq(q).split(/\s+/).filter(Boolean);
   let pool=[];
@@ -613,12 +613,12 @@ SH.amount={title:st=>st.editId?'Изменить запись':'Сколько',
     ${units.length>1?`<div class="chips" style="margin-top:8px">${units.map((u,i)=>`<button class="chip${st.ui===i?' on':''}" data-a="amUnit" data-v="${i}">${i?esc(u[0])+' · '+fmt(u[1])+' г':'граммы'}</button>`).join('')}</div>`:''}
     ${st.mode==='ing'?'':`<div class="lab" style="margin-top:14px">Приём пищи</div><div class="seg" style="margin-top:6px">${MEALS.map(([k,l])=>`<button data-a="amMeal" data-v="${k}" class="${st.meal===k?'on':''}">${l}</button>`).join('')}</div>`}
     <div class="preview" id="amp"></div>
-    ${f.src==='base'&&f.en?`<p class="help" style="margin-top:12px">Значения ориентировочные. <button class="link" data-a="checkUsda">Сверить с USDA</button> — нужен интернет.</p>`:''}`},
+    ${f.note?`<p class="help" style="margin-top:12px">Источник: ${esc(f.note)}.</p>`:''}${f.src==='base'&&f.en?`<p class="help" style="margin-top:12px">Значения ориентировочные. <button class="link" data-a="checkUsda">Сверить с USDA</button> — нужен интернет.</p>`:''}`},
   foot:st=>`<div class="btns ${st.editId?'two':''}" style="margin:0">${st.editId?'<button class="btn bad" data-a="amDel">Удалить</button>':''}<button class="btn pri" data-a="amOk">${st.editId?'Сохранить':'Добавить'}</button></div>`,
   after:o=>{const i=q(o,'#am');i.addEventListener('input',()=>{o.st.amt=i.value;amPrev(o)});amPrev(o);if(!o.st.editId)setTimeout(()=>{try{i.focus();i.select()}catch(e){}},280)}};
 function amGrams(st){const units=[['г',1]].concat(st.food.srv||[]);const a=num(st.amt);if(!(a>0))return 0;return st.ui>0?a*units[st.ui][1]:a}
 function amPrev(o){const g=amGrams(o.st),x=o.st.food.x,m=g/100;q(o,'#amp').innerHTML=`<div><span>ккал</span><b>${fmt(x.k*m)}</b></div><div><span>белки</span><b style="color:var(--prot)">${f1(x.p*m)}</b></div><div><span>жиры</span><b style="color:var(--fat)">${f1(x.f*m)}</b></div><div><span>углев.</span><b style="color:var(--carb)">${f1(x.c*m)}</b></div>`}
-function openAmount(food,st){st=Object.assign({food,amt:'100',ui:0},st);if(!st.editId&&food.srv&&food.srv.length&&(food.src==='rcp'||food.src==='my'||food.src==='off'||food.srv[0][0].startsWith('1 шт'))){st.ui=1;st.amt='1'}openSheet('amount',st)}
+function openAmount(food,st){st=Object.assign({food,amt:'100',ui:0},st);if(!st.editId&&food.srv&&food.srv.length&&(food.src==='rcp'||food.src==='my'||food.src==='off'||food.note||food.srv[0][0].startsWith('1 шт'))){st.ui=1;st.amt='1'}openSheet('amount',st)}
 
 /* --- быстрая запись --- */
 SH.quick={title:'Быстрая запись',body:st=>`<p class="help" style="margin-top:0">Для блюд вне дома, когда точный состав неизвестен.</p>
@@ -751,7 +751,7 @@ SH.about={title:'Как считается',body:()=>`<div class="help" style="f
   <p><b>Минимум</b> — норма не опускается ниже 1500 ккал для мужчин и 1200 для женщин.</p>
   <p><b>Белок</b> — граммы на кг желаемого веса (по умолчанию 1,8). <b>Жиры</b> — доля калорий. <b>Углеводы</b> — остаток. <b>Клетчатка</b> — 14 г на 1000 ккал.</p>
   <p><b>Тренировки</b> — (MET − 1) × вес × часы. Значения MET из Compendium of Physical Activities (2024). Единица вычитается, потому что покой уже входит в базовый обмен.</p>
-  <p><b>Встроенная база</b> — около 150 продуктов, значения ориентировочные. Точные данные — через «Сверить с USDA» в карточке продукта или вкладку «Онлайн».</p>
+  <p><b>Встроенная база</b> — около 140 базовых продуктов с ориентировочными значениями (точные — через «Сверить с USDA» в карточке продукта) и около 370 готовых блюд и напитков: McDonald's Romania, Luca, Socului Kebap, Dristor Doner, суши — по официальным данным этих заведений; румынская кухня, супы, плов, стейки, морепродукты, кофе, алкоголь — усреднённо или по USDA. Источник указан в карточке блюда.</p>
   <p><b>Вес и возраст</b> для каждого дня берутся на эту дату: норма меняется по мере похудения.</p></div>`};
 SH.confirm={title:st=>st.t,body:st=>`<p style="margin-top:0">${st.msg}</p>`,foot:st=>`<div class="btns two" style="margin:0"><button class="btn" data-a="close">Отмена</button><button class="btn pri" style="background:var(--bad);color:#fff" data-a="cfOk">${st.ok||'Удалить'}</button></div>`};
 SH.scan={title:'Сканер штрихкода',body:st=>`<video class="scan" id="sv" playsinline muted autoplay></video><p class="help" id="sst">${st.msg||'Запускаю камеру…'}</p>`};
@@ -828,7 +828,7 @@ const A={
   aTab:el=>{const o=topS();o.st.tab=el.dataset.v;o.st.status='';o.st.online=o.st.tab==='online'?o.st.online:[];refresh(o)},
   aPick:el=>{const o=topS();const f=o.st.list[+el.dataset.v];if(!f)return;if(f.src==='quick'){const e=recentFoods(40).find(x=>x.n===f.n&&x.src==='quick');addEntry(o.st.date,o.st.meal,Object.assign(clone(e),{id:uid()}));closeSheet();render();toast('Добавлено');return}
     openAmount(f,{meal:o.st.meal,date:o.st.date,mode:o.st.mode,onIng:o.st.onIng})},
-  amUnit:el=>{const o=topS();const g=amGrams(o.st);const i=+el.dataset.v;o.st.ui=i;const units=[['г',1]].concat(o.st.food.srv||[]);o.st.amt=String(i?r1(g/units[i][1]||1):r1(g||100)).replace('.',',');refresh(o)},
+  amUnit:el=>{const o=topS();const g=amGrams(o.st);const i=+el.dataset.v;o.st.ui=i;const units=[['г',1]].concat(o.st.food.srv||[]);o.st.amt=i?'1':String(r1(g||100)).replace('.',',');refresh(o)},
   amMeal:el=>{const o=topS();o.st.amt=q(o,'#am').value;o.st.meal=el.dataset.v;refresh(o)},
   amOk:()=>{const o=topS(),st=o.st;const g=amGrams(st);if(!(g>0))return toast('Введите количество');
     const units=[['г',1]].concat(st.food.srv||[]);const u=st.ui>0?{l:units[st.ui][0],g:units[st.ui][1],q:num(st.amt)}:null;
@@ -840,7 +840,7 @@ const A={
   amDel:()=>{const st=topS().st;const fe=findEntry(st.date,st.editId);if(fe){S.days[st.date].m[fe.k].splice(fe.i,1);cleanDay(st.date);save()}closeSheet();render();toast('Удалено')},
   entEdit:el=>{const fe=findEntry(V.date,el.dataset.v);if(!fe)return;const e=fe.e;
     if(e.src==='quick'){const n=entN(e);openSheet('quick',{editId:e.id,date:V.date,meal:fe.k,n:e.n,k:r0(n.k),p:r1(n.p)||'',f:r1(n.f)||'',c:r1(n.c)||''});return}
-    const food={n:e.n,x:e.x,srv:[],src:e.src==='base'||e.src==='rcp'?e.src:'my',en:''};const src=e.ref&&findFood(e.src,e.ref);if(src){food.srv=src.srv||[];food.en=src.en;food.brand=src.brand}
+    const food={n:e.n,x:e.x,srv:[],src:e.src==='base'||e.src==='rcp'?e.src:'my',en:''};const src=e.ref&&findFood(e.src,e.ref);if(src){food.srv=src.srv||[];food.en=src.en;food.brand=src.brand;food.note=src.note}
     let ui=0,amt=String(e.g).replace('.',',');if(e.u){const i=food.srv.findIndex(s=>s[0]===e.u.l);if(i<0)food.srv=[[e.u.l,e.u.g]].concat(food.srv);ui=(i<0?0:i)+1;amt=String(e.u.q).replace('.',',')}
     openSheet('amount',{food,amt,ui,meal:fe.k,date:V.date,editId:e.id})},
   checkUsda:()=>{const o=topS();const en=o.st.food.en;closeSheet();let a=topS();if(!a||a.type!=='add'){a=openSheet('add',{meal:o.st.meal||'s',date:o.st.date||V.date,tab:'online',q:en,mode:o.st.mode})}else{a.st.tab='online';a.st.q=en;refresh(a)}searchUsda(a)},
