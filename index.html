@@ -260,7 +260,7 @@ const IC={
 
 /* ========== хранилище ========== */
 const KEY='racion.v1';
-const APP_VERSION='5';
+const APP_VERSION='6';
 function blank(){return{v:1,profile:null,goal:{rate:0.5,target:null,prot:1.8,fatPct:28,ov:{},eatBack:100},voyage:null,weights:{},days:{},foods:[],recipes:[],templates:[],settings:{usdaKey:'',lastBackup:null,created:today()}}}
 function normalize(o){const b=blank();o=Object.assign(b,o||{});o.goal=Object.assign(blank().goal,o.goal||{});o.goal.ov=o.goal.ov||{};o.settings=Object.assign(blank().settings,o.settings||{});
   for(const k in o.days){const d=o.days[k];d.m=Object.assign({b:[],l:[],d:[],s:[]},d.m||{});d.ex=d.ex||[]}return o}
@@ -347,7 +347,7 @@ function recentFoods(limit){
   for(const k of ks){const d=S.days[k];for(const m of ['d','l','b','s'])for(const e of d.m[m].slice().reverse()){const key=e.src+'|'+(e.ref||e.n);if(seen.has(key))continue;seen.add(key);out.push(e);if(out.length>=limit)return out}}
   return out;
 }
-function entryAsFood(e){if(e.ref&&e.src!=='quick'){const f=findFood(e.src,e.ref);if(f)return f}return{id:e.ref||null,n:e.n,x:e.x,srv:e.u&&e.u.l!=='г'?[[e.u.l,e.u.g]]:[],src:e.src==='quick'?'quick':e.src}}
+function entryAsFood(e){if(e.ref&&e.src!=='quick'){const f=findFood(e.src,e.ref);if(f&&(e.src!=='base'||f.n===e.n))return f}return{id:e.ref||null,n:e.n,x:e.x,srv:e.u&&e.u.l!=='г'?[[e.u.l,e.u.g]]:[],src:e.src==='quick'?'quick':e.src}}
 
 /* ========== интерфейс: состояние ========== */
 const V={tab:'diary',date:today(),statP:'30',sheets:[]};
@@ -841,7 +841,7 @@ const A={
   amDel:()=>{const st=topS().st;const fe=findEntry(st.date,st.editId);if(fe){S.days[st.date].m[fe.k].splice(fe.i,1);cleanDay(st.date);save()}closeSheet();render();toast('Удалено')},
   entEdit:el=>{const fe=findEntry(V.date,el.dataset.v);if(!fe)return;const e=fe.e;
     if(e.src==='quick'){const n=entN(e);openSheet('quick',{editId:e.id,date:V.date,meal:fe.k,n:e.n,k:r0(n.k),p:r1(n.p)||'',f:r1(n.f)||'',c:r1(n.c)||''});return}
-    const food={n:e.n,x:e.x,srv:[],src:e.src==='base'||e.src==='rcp'?e.src:'my',en:''};const src=e.ref&&findFood(e.src,e.ref);if(src){food.srv=src.srv||[];food.en=src.en;food.brand=src.brand;food.note=src.note}
+    const food={n:e.n,x:e.x,srv:[],src:e.src==='base'||e.src==='rcp'?e.src:'my',en:''};const src=e.ref&&findFood(e.src,e.ref);if(src&&(e.src!=='base'||src.n===e.n)){food.srv=src.srv||[];food.en=src.en;food.brand=src.brand;food.note=src.note}
     let ui=0,amt=String(e.g).replace('.',',');if(e.u){const i=food.srv.findIndex(s=>s[0]===e.u.l);if(i<0)food.srv=[[e.u.l,e.u.g]].concat(food.srv);ui=(i<0?0:i)+1;amt=String(e.u.q).replace('.',',')}
     openSheet('amount',{food,amt,ui,meal:fe.k,date:V.date,editId:e.id})},
   checkUsda:()=>{const o=topS();const en=o.st.food.en;closeSheet();let a=topS();if(!a||a.type!=='add'){a=openSheet('add',{meal:o.st.meal||'s',date:o.st.date||V.date,tab:'online',q:en,mode:o.st.mode})}else{a.st.tab='online';a.st.q=en;refresh(a)}searchUsda(a)},
