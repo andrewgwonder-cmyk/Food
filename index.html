@@ -269,8 +269,8 @@ const IC={
 /* ========== хранилище ========== */
 const KEY='racion.v1';
 const APP_VERSION='7';
-function blank(){return{v:1,profile:null,goal:{rate:0.5,target:null,prot:1.8,fatPct:28,ov:{},eatBack:100,water:2000},voyage:null,weights:{},days:{},foods:[],recipes:[],templates:[],settings:{usdaKey:'',lastBackup:null,created:today()}}}
-function normalize(o){const b=blank();o=Object.assign(b,o||{});o.goal=Object.assign(blank().goal,o.goal||{});o.goal.ov=o.goal.ov||{};o.settings=Object.assign(blank().settings,o.settings||{});
+function blank(){return{v:1,profile:null,goal:{rate:0.5,target:null,prot:1.8,fatPct:28,ov:{},eatBack:100,water:2000},voyage:null,weights:{},days:{},foods:[],recipes:[],templates:[],settings:{usdaKey:'',lastBackup:null,created:today(),theme:{mode:'system',dark:'20:00',light:'07:00'}}}}
+function normalize(o){const b=blank();o=Object.assign(b,o||{});o.goal=Object.assign(blank().goal,o.goal||{});o.goal.ov=o.goal.ov||{};o.settings=Object.assign(blank().settings,o.settings||{});o.settings.theme=Object.assign(blank().settings.theme,o.settings.theme||{});
   for(const k in o.days){const d=o.days[k];d.m=Object.assign({b:[],l:[],d:[],s:[]},d.m||{});d.ex=d.ex||[]}return o}
 let S;try{S=normalize(JSON.parse(localStorage.getItem(KEY)||'null'))}catch(e){S=blank()}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Не удалось сохранить: память браузера недоступна')}}
@@ -583,7 +583,7 @@ function viewMore(){
   return `<header class="top"><h1>Ещё</h1></header>
   <div class="sec menu">${it('planOpen','Расписать питание на период','Копировать день или шаблон на рейс, недели, месяцы')}${it('tplList','Шаблоны дней',S.templates.length+' '+plural(S.templates.length,'шаблон','шаблона','шаблонов'))}${it('calOpen','Календарь','Заполненные и запланированные дни')}</div>
   <div class="sec menu">${it('myFoods','Мои продукты',S.foods.length+' '+plural(S.foods.length,'продукт','продукта','продуктов'))}${it('rcpList','Рецепты и блюда',S.recipes.length+' '+plural(S.recipes.length,'рецепт','рецепта','рецептов'))}</div>
-  <div class="sec menu">${it('profOpen','Профиль','Пол, дата рождения, рост, активность')}${it('backupOpen','Резервная копия',S.settings.lastBackup?'последняя '+fDate(S.settings.lastBackup):'ещё не делалась')}${it('onlineOpen','Онлайн-базы продуктов','USDA и Open Food Facts')}${it('installOpen','Установка на iPhone','')}${it('aboutOpen','Как считается','Формулы и источники')}</div>
+  <div class="sec menu">${it('profOpen','Профиль','Пол, дата рождения, рост, активность')}${it('backupOpen','Резервная копия',S.settings.lastBackup?'последняя '+fDate(S.settings.lastBackup):'ещё не делалась')}${it('onlineOpen','Онлайн-базы продуктов','USDA и Open Food Facts')}${it('themeOpen','Оформление',themeLabel())}${it('installOpen','Установка на iPhone','')}${it('aboutOpen','Как считается','Формулы и источники')}</div>
   <div class="sec menu">${it('wipeOpen','Удалить все данные','')}</div>
   <p class="help" style="text-align:center;margin:18px 0">Рацион · версия ${APP_VERSION} · ${BASE.length} продуктов в базе<br>Данные только на этом телефоне</p>`;
 }
@@ -760,6 +760,12 @@ SH.online={title:'Онлайн-базы продуктов',body:()=>`<p class="
   <div class="field"><label for="uk">Ключ USDA (необязательно)</label><input class="inp" id="uk" value="${esc(S.settings.usdaKey||'')}" placeholder="DEMO_KEY" autocomplete="off" spellcheck="false"></div>
   <div class="btns"><button class="btn pri" data-a="ukSave">Сохранить ключ</button></div>
   <p class="help" style="margin-top:16px"><b>Open Food Facts</b> — открытая база магазинных товаров со штрихкодами. Ключ не нужен. Лимиты: 15 запросов в минуту на товар, 10 в минуту на поиск. Данные заполняют пользователи, поэтому сверяйте с упаковкой.</p>`};
+SH.theme={title:'Оформление',body:()=>{const T=S.settings.theme;const opt=(k,t,d)=>`<button class="opt${T.mode===k?' on':''}" data-a="thMode" data-v="${k}"><div><b>${t}</b><small>${d}</small></div></button>`;
+  return `<div class="opts">${opt('system','Как на iPhone','Следует настройке «Оформление» в iPhone')}${opt('light','Всегда светлая','')}${opt('dark','Всегда тёмная','')}${opt('time','День / ночь по времени','Вечером тёмная, утром светлая')}</div>
+  ${T.mode==='time'?`<div class="grid2"><div class="field"><label for="th-d">Тёмная с</label><input class="inp num" type="time" id="th-d" value="${T.dark}"></div><div class="field"><label for="th-l">Светлая с</label><input class="inp num" type="time" id="th-l" value="${T.light}"></div></div>
+  <p class="help">Сейчас: ${themeNow()==='dark'?'тёмная':'светлая'}. Тема переключается сама, пока приложение открыто, и при каждом открытии.</p>`:''}
+  ${T.mode==='system'?`<p class="help" style="margin-top:12px">В iPhone можно включить автоматическую смену: Настройки → Экран и яркость → «Автоматически». Тогда тема будет меняться по закату и рассвету.</p>`:''}`},
+  after:o=>{o.el.querySelectorAll('#th-d,#th-l').forEach(i=>i.addEventListener('change',()=>{const T=S.settings.theme;const d=q(o,'#th-d').value,l=q(o,'#th-l').value;if(d)T.dark=d;if(l)T.light=l;save();applyTheme();refresh(o)}))}};
 SH.install={title:'Установка на iPhone',body:()=>`<ol style="padding-left:20px;margin:0;line-height:1.6"><li>Откройте адрес приложения в <b>Safari</b>.</li><li>Нажмите «Поделиться» (квадрат со стрелкой вверх).</li><li>Выберите «На экран "Домой"» → «Добавить».</li><li>Запускайте только с иконки. После первого запуска приложение работает без интернета.</li></ol>
   <p class="help" style="margin-top:12px">Сейчас: ${('standalone' in navigator&&navigator.standalone)||matchMedia('(display-mode: standalone)').matches?'приложение запущено с иконки.':'открыто в браузере. Данные браузера и иконки — разные хранилища: заполняйте дневник уже в установленном приложении.'}</p>`};
 SH.about={title:'Как считается',body:()=>`<div class="help" style="font-size:14.5px;line-height:1.55">
@@ -941,6 +947,8 @@ const A={
   onlineOpen:()=>openSheet('online'),
   ukSave:()=>{S.settings.usdaKey=$('#uk').value.trim();save();closeSheet();toast('Сохранено')},
   installOpen:()=>openSheet('install'),
+  themeOpen:()=>openSheet('theme'),
+  thMode:el=>{S.settings.theme.mode=el.dataset.v;save();applyTheme();refresh();render()},
   aboutOpen:()=>openSheet('about'),
   wipeOpen:()=>openSheet('confirm',{t:'Удалить все данные?',msg:'Дневник, вес, продукты, рецепты и настройки будут удалены с этого телефона. Сначала сделайте резервную копию.',ok:'Удалить всё',fn:()=>{S=blank();save();closeAll();V.tab='diary';V.date=today();render()}}),
   oUsda:()=>{const o=topS();o.st.q=q(o,'#aq').value.trim();searchUsda(o)},
@@ -956,6 +964,15 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='aq'){
 document.addEventListener('change',e=>{if(e.target.id==='g-t'){const v=num(e.target.value);S.goal.target=v>30?v:null;save();render()}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.profile&&!V.sheets.length){render()}});
 
+function hm(t){const[a,b]=String(t||'0:0').split(':').map(Number);return (a||0)*60+(b||0)}
+function themeNow(){const T=S.settings.theme;if(T.mode==='light'||T.mode==='dark')return T.mode;
+  if(T.mode==='time'){const n=new Date(),m=n.getHours()*60+n.getMinutes(),d=hm(T.dark),l=hm(T.light);if(d===l)return'light';return (d>l?(m>=d||m<l):(m>=d&&m<l))?'dark':'light'}
+  return matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}
+function themeLabel(){const T=S.settings.theme;return T.mode==='light'?'Всегда светлая':T.mode==='dark'?'Всегда тёмная':T.mode==='time'?`Тёмная с ${T.dark} до ${T.light}`:'Как на iPhone'}
+function applyTheme(){const T=S.settings.theme,root=document.documentElement;if(T.mode==='system')root.removeAttribute('data-theme');else root.setAttribute('data-theme',themeNow());
+  const mt=document.querySelector('meta[name="theme-color"]');if(mt)mt.setAttribute('content',themeNow()==='dark'?'#0d1417':'#eef2f3')}
+applyTheme();setInterval(applyTheme,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)applyTheme()});
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme)}catch(e){}
 render();
 if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(()=>{})}
 </script>
