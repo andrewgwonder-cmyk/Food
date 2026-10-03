@@ -129,6 +129,20 @@ button{cursor:pointer;border:0;background:none;padding:0}
 .wbtns{display:grid;grid-template-columns:1fr 1.3fr 1.3fr;gap:8px}
 .wbtns .btn{min-height:44px;font-size:15px;padding:0 8px}
 .btn.wat{background:var(--water-soft);color:var(--water)}
+.repbtn{margin-top:14px;width:100%;display:flex;align-items:center;gap:12px;padding:14px;border-radius:var(--r);background:var(--card);box-shadow:var(--shadow);text-align:left}
+.repbtn b{display:block;font-size:16px}.repbtn small{color:var(--muted);font-size:13px}
+.rlist{display:grid;gap:10px}
+.ri{display:flex;gap:12px;align-items:flex-start;background:var(--card);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow)}
+.ri .dot{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;flex:none;font-size:15px;font-weight:700}
+.ri.bad .dot{background:color-mix(in srgb,var(--bad) 16%,var(--card));color:var(--bad)}
+.ri.warn .dot{background:color-mix(in srgb,var(--warn) 18%,var(--card));color:var(--warn)}
+.ri.ok .dot{background:var(--accent-soft);color:var(--accent)}
+.ri.info .dot{background:var(--soft);color:var(--muted)}
+.ri .tx{min-width:0;font-size:14.5px;line-height:1.45}
+.card .rlist{gap:6px}.card .ri{background:none;box-shadow:none;padding:6px 0;border-radius:0}.card .ri+.ri{border-top:1px solid var(--line);padding-top:10px}.ri .tx b{font-weight:650}
+.rhead{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.rhead .big{font-size:28px}
+.tips{margin:12px 0 0;padding-left:20px;line-height:1.5;font-size:14.5px}
 .banner{margin-top:14px;padding:12px 14px;border-radius:var(--r);background:var(--accent-soft);display:flex;gap:10px;align-items:center;font-size:14px}
 .banner span{flex:1}
 .banner.warn{background:color-mix(in srgb,var(--warn) 16%,var(--card))}
@@ -283,8 +297,10 @@ const MI={
   a:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="14.5" cy="4.5" r="2"/><path d="M8 21l3-6 3 2.5V22M6 11l3.5-3.5L14 9l2.5 3.5H20M11 15l-1.5-4"/></svg>',
   w:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.4 6 11a6 6 0 0 1-12 0c0-4.6 6-11 6-11z"/><path d="M9.5 15a2.6 2.6 0 0 0 2.5 2.5"/></svg>',
   k:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><path d="M8.5 9.5a5 5 0 0 1 7 0l-2.2 2.6a1.7 1.7 0 0 0-2.6 0z"/></svg>'};
+MI.r='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3.5" width="14" height="17" rx="3"/><path d="M9 8.5h6M9 12.5h6M9 16.5h3"/></svg>';
 const MC={b:'mb',l:'ml',d:'md',s:'ms'};
-const mtile=k=>`<span class="mtile" style="background:var(--${({b:'mb',l:'ml',d:'md',s:'ms',a:'ma',w:'water',k:'mw'})[k]}-soft);color:var(--${({b:'mb',l:'ml',d:'md',s:'ms',a:'ma',w:'water',k:'mw'})[k]})">${MI[k]}</span>`;
+const MT={b:'mb',l:'ml',d:'md',s:'ms',a:'ma',w:'water',k:'mw',r:'accent'};
+const mtile=k=>`<span class="mtile" style="background:var(--${MT[k]}-soft);color:var(--${MT[k]})">${MI[k]}</span>`;
 const IC={
   plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
   x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
@@ -302,7 +318,7 @@ const IC={
 
 /* ========== хранилище ========== */
 const KEY='racion.v1';
-const APP_VERSION='8';
+const APP_VERSION='9';
 function blank(){return{v:1,profile:null,goal:{rate:0.5,target:null,prot:1.8,fatPct:28,ov:{},eatBack:100,water:2000},voyage:null,weights:{},days:{},foods:[],recipes:[],templates:[],settings:{usdaKey:'',lastBackup:null,created:today(),theme:{mode:'system',dark:'20:00',light:'07:00'}}}}
 function normalize(o){const b=blank();o=Object.assign(b,o||{});o.goal=Object.assign(blank().goal,o.goal||{});o.goal.ov=o.goal.ov||{};o.settings=Object.assign(blank().settings,o.settings||{});o.settings.theme=Object.assign(blank().settings.theme,o.settings.theme||{});
   for(const k in o.days){const d=o.days[k];d.m=Object.assign({b:[],l:[],d:[],s:[]},d.m||{});d.ex=d.ex||[]}return o}
@@ -471,11 +487,82 @@ function viewDiary(){
     <div class="wbtns"><button class="btn" data-a="wtr" data-v="-250" ${wt?'':'disabled style="opacity:.4"'} aria-label="Убрать 250 мл">−250</button><button class="btn wat" data-a="wtr" data-v="250">+250 мл</button><button class="btn wat" data-a="wtr" data-v="500">+500 мл</button></div></div></section>`;
   const w=S.weights[s];
   h+=`<section class="sec"><button class="weightline row" style="border:0;padding-left:14px" data-a="wOpen">${mtile('k')}<div class="t"><b>Вес</b><small>${w!=null?'записан за этот день':'не записан за этот день'}</small></div>${w!=null?`<b class="num">${f1(w)} кг</b>`:`<span class="plus">${IC.plus}</span>`}</button></section>`;
+  if(hasFood(s)&&!isPlan)h+=`<button class="repbtn" data-a="repOpen">${mtile('r')}<div style="flex:1;min-width:0"><b>Итог дня</b><small>Что получилось и что поправить</small></div>${IC.chev.replace('<svg','<svg width="20" height="20" style="color:var(--muted)"')}</button>`;
   if(isPlan&&!hasFood(s))h+=`<div class="banner"><span>Это будущий день. Можно расписать его заранее или скопировать готовый день сюда.</span><button class="link" data-a="copyFromOpen">Скопировать</button></div>`;
   return h;
 }
 function amountLabel(e){if(e.u&&e.u.l&&e.u.l!=='г'){const m=/^1\s+(.*)$/.exec(e.u.l);return (m?`${f1(e.u.q)} ${m[1]}`:`${f1(e.u.q)} × ${e.u.l}`)+` · ${fmt(e.g)} г`}return e.src==='quick'?'быстрая запись':`${f1(e.g)} г`}
 function exLabel(e){const p=[];if(e.min)p.push(e.min+' мин');if(e.t==='tread'){p.push(f1(e.spd)+' км/ч');if(e.inc)p.push('наклон '+f1(e.inc)+'%')}else if(e.km)p.push(f1(e.km)+' км');if(e.met)p.push('MET '+f1(e.met));return p.join(' · ')||'вручную'}
+
+/* ---------- отчёты ---------- */
+const RX_ALC=/beer|wine|vodka|whisk|cognac|brandy|\brum\b|\bgin\b|tequila|țuică|horinc|pălinc|liqueur|baileys|jäger|amaretto|aperol|mojito|piña|spritz|cider|radler|prosecco|sparkling|port \/|vermouth|mulled|spirits|пиво|вино|водк|виски|коньяк|\bром\b|джин|текил|цуйк|палинк|ликёр|коктейл|сидр|игрист|глинтвейн/i;
+const RX_DRINK=/cola|fanta|sprite|soft drink|juice|lemonade|ice tea|energy drink|smoothie|compote|kvass|nectar|mors|tonic|frapp|mocha|with syrup|raf coffee|hot chocolate|3-in-1|bragă|socată|isotonic|shake|кола|фанта|спрайт|газиров|сок |сок,|лимонад|энергет|смузи|компот|квас|морс|раф|мокко|фраппе|какао/i;
+const DAYW=['вс','пн','вт','ср','чт','пт','сб'];
+function entriesOf(s){const d=S.days[s];if(!d)return[];const out=[];for(const[k]of MEALS)for(const e of d.m[k])out.push(Object.assign({meal:k},e,{nn:entN(e)}));return out}
+function topBy(list,key,n){const m={};for(const e of list){m[e.n]=(m[e.n]||0)+e.nn[key]}return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,n)}
+const nm=n=>{n=String(n).replace(/\s*\([^)]*\)/g,'').trim();return `<b>${esc(n.length>40?n.slice(0,38)+'…':n)}</b>`};
+function dayReport(s){
+  const cc=calc(s),norm=dayNorm(s,cc),tot=dayTot(s),E=entriesOf(s),it=[],d=S.days[s];
+  const add=(lvl,t)=>it.push({lvl,t});
+  const diff=tot.k-norm;
+  if(diff>norm*0.1){const tp=topBy(E,'k',2).map(([n,k])=>`${nm(n)} (${fmt(k)})`).join(', ');add('bad',`Перебор <b>+${fmt(diff)} ккал</b> к норме ${fmt(norm)}. Больше всего дали: ${tp}.`)}
+  else if(diff<-norm*0.25&&s<today())add('warn',`Съедено всего <b>${fmt(tot.k)} из ${fmt(norm)} ккал</b>. Слишком большой дефицит ведёт к срывам и потере мышц. Если что-то не записал, добавь.`);
+  else add('ok',`Калории в норме: <b>${fmt(tot.k)} из ${fmt(norm)}</b>.`);
+  if(tot.p<cc.p*0.8)add('warn',`Белка <b>${fmt(tot.p)} из ${fmt(cc.p)} г</b>, не хватает ${fmt(cc.p-tot.p)} г. Добрать проще всего: творог, греческий йогурт, куриное филе, яйца, тунец.`);
+  else add('ok',`Белок в норме: <b>${fmt(tot.p)} г</b>.`);
+  if(tot.f>cc.f*1.2){const tp=topBy(E,'f',2).map(([n,g])=>`${nm(n)} (${fmt(g)} г)`).join(', ');add('warn',`Жиров <b>${fmt(tot.f)} из ${fmt(cc.f)} г</b>. Главные источники: ${tp}.`)}
+  if(tot.fb<cc.fb*0.6)add('warn',`Клетчатки <b>${fmt(tot.fb)} из ${fmt(cc.fb)} г</b>: мало овощей и фруктов. Помогут салат, овощи к гарниру, яблоко, бобовые.`);
+  const liq=E.filter(e=>RX_ALC.test(e.n)||RX_DRINK.test(e.n)),lk=liq.reduce((a,e)=>a+e.nn.k,0);
+  if(lk>=200){const alc=liq.filter(e=>RX_ALC.test(e.n)).reduce((a,e)=>a+e.nn.k,0);add('warn',`Жидкие калории: <b>${fmt(lk)} ккал</b>${alc?`, из них алкоголь ${fmt(alc)}`:''}. Они почти не насыщают. Замени часть на воду, чай, кофе без сахара или напитки zero.`)}
+  if(tot.k>800){const ev=(mealTot(d.m.d).k+mealTot(d.m.s).k)/tot.k;if(ev>0.55)add('warn',`<b>${r0(ev*100)}% калорий</b> пришлось на ужин и перекусы. Попробуй перенести часть еды на завтрак и обед: вечером легче переесть.`)}
+  const wt=dayWater(s),wg=S.goal.water||2000;
+  if(wt>=wg)add('ok',`Вода в норме: <b>${fL(wt)} л</b>.`);else if(wt>0)add('warn',`Воды <b>${fL(wt)} из ${fL(wg)} л</b>.`);else add('info','Вода не отмечена.');
+  if(d.ex.length)add('ok',`Активность: <b>${fmt(dayEx(s))} ккал</b> (${d.ex.map(e=>esc(e.n)).join(', ')}).`);
+  const miss=[['b','завтрак'],['l','обед'],['d','ужин']].filter(([k])=>!d.m[k].length).map(a=>a[1]);
+  if(miss.length&&s<today())add('info',`Не записан ${miss.join(', ')}. Если ел, добавь: иначе итог неточный.`);
+  const order={bad:0,warn:1,info:2,ok:3};it.sort((a,b)=>order[a.lvl]-order[b.lvl]);
+  return{items:it,issues:it.filter(x=>x.lvl==='bad'||x.lvl==='warn').length,tot,norm}}
+function periodReport(a,b){
+  const days=[];for(let s=a;s<=b;s=addD(s,1))if(hasFood(s))days.push(s);
+  if(days.length<2)return null;
+  const R={n:days.length,inNorm:0,over:0,diffSum:0,p:0,pt:0,fb:0,fbt:0,liq:0,ev:0,evN:0,ex:0,exDays:0,wt:0,wtN:0,wd:{we:[0,0],wk:[0,0]},low:{}};
+  for(const s of days){const cc=calc(s),norm=dayNorm(s,cc),tot=dayTot(s),E=entriesOf(s),d=S.days[s],df=tot.k-norm;
+    R.diffSum+=df;R.normSum=(R.normSum||0)+norm;if(Math.abs(df)<=norm*0.1||df<0)R.inNorm++;if(df>norm*0.1)R.over++;
+    R.p+=tot.p;R.pt+=cc.p;R.fb+=tot.fb;R.fbt+=cc.fb;
+    const g=[0,6].includes(pd(s).getDay())?'we':'wk';R.wd[g][0]+=df;R.wd[g][1]++;
+    for(const e of E){if(RX_ALC.test(e.n)||RX_DRINK.test(e.n))R.liq+=e.nn.k;
+      const kk=Math.max(e.nn.k,1),pShare=e.nn.p*4/kk,fShare=e.nn.f*9/kk;if((RX_ALC.test(e.n)||RX_DRINK.test(e.n)||(fShare>=0.4&&pShare<0.15))&&e.nn.k>=100)R.low[e.n]=(R.low[e.n]||0)+e.nn.k}
+    if(tot.k>800){R.ev+=(mealTot(d.m.d).k+mealTot(d.m.s).k)/tot.k;R.evN++}
+    if(d.ex.length){R.exDays++;R.ex+=dayEx(s)}
+    const w=dayWater(s);if(w){R.wt+=w;R.wtN++}}
+  const ks=wKeys().filter(k=>k>=a&&k<=b);R.wch=ks.length>=2?S.weights[ks[ks.length-1]]-S.weights[ks[0]]:null;R.wdays=ks.length>=2?dDiff(ks[0],ks[ks.length-1]):0;
+  R.plan=S.goal.target!=null?-S.goal.rate*R.wdays/7:null;
+  R.lowTop=Object.entries(R.low).sort((x,y)=>y[1]-x[1]).slice(0,3);
+  const tips=[];const avgDiff=R.diffSum/R.n,pAvg=R.p/R.n,ptAvg=R.pt/R.n,liqAvg=R.liq/R.n,evAvg=R.evN?R.ev/R.evN:0;
+  if(avgDiff<-0.2*(R.normSum/R.n))tips.push([-avgDiff,`В среднем <b>${fmt(-avgDiff)} ккал</b> в день ниже нормы. Это больше, чем нужно для выбранного темпа. Либо записано не всё, либо ешь слишком мало: при таком дефиците тяжелее держаться и теряются мышцы.`]);
+  if(R.over>=Math.ceil(R.n*0.4))tips.push([avgDiff,`Перебор был в <b>${R.over} из ${R.n}</b> дней. Начни с самого частого «дорогого» продукта${R.lowTop[0]?`: ${nm(R.lowTop[0][0])}`:''}. Уменьшить порцию или реже есть уже даст заметный результат.`]);
+  const we=R.wd.we[1]?R.wd.we[0]/R.wd.we[1]:null,wk=R.wd.wk[1]?R.wd.wk[0]/R.wd.wk[1]:null;
+  if(we!=null&&wk!=null&&we-wk>300)tips.push([we-wk,`В выходные в среднем <b>+${fmt(we-wk)} ккал</b> к будням. Спланируй выходные заранее: шаблон дня или запись еды с утра.`]);
+  if(pAvg<ptAvg*0.8)tips.push([(ptAvg-pAvg)*8,`Белок в среднем <b>${fmt(pAvg)} из ${fmt(ptAvg)} г</b>. Добавь белковый продукт в каждый приём пищи: так сытнее и мышцы сохраняются.`]);
+  if(liqAvg>=150)tips.push([liqAvg,`Жидкие калории в среднем <b>${fmt(liqAvg)} ккал в день</b>. Это самый лёгкий резерв: замени часть на воду, zero или кофе без сахара.`]);
+  if(evAvg>0.55)tips.push([evAvg*300,`В среднем <b>${r0(evAvg*100)}%</b> калорий на ужин и перекусы. Плотнее завтрак и обед — меньше тянет есть вечером.`]);
+  if(R.fb/R.n<R.fbt/R.n*0.6)tips.push([100,`Мало клетчатки (<b>${fmt(R.fb/R.n)} из ${fmt(R.fbt/R.n)} г</b>). Добавляй овощи к обеду и ужину.`]);
+  if(R.wtN&&R.wt/R.wtN<(S.goal.water||2000)*0.8)tips.push([80,`Воды в среднем <b>${fL(Math.round(R.wt/R.wtN/50)*50)} л</b> при цели ${fL(S.goal.water||2000)} л.`]);
+  if(!R.exDays)tips.push([60,'Тренировок не было. Даже 2–3 прогулки или похода в зал в неделю помогают сохранить мышцы в дефиците.']);
+  R.tips=tips.sort((x,y)=>y[0]-x[0]).slice(0,3).map(t=>t[1]);R.avgDiff=avgDiff;R.pAvg=pAvg;R.ptAvg=ptAvg;R.liqAvg=liqAvg;
+  return R}
+function periodReportCard(a,b,label){const R=periodReport(a,b);if(!R)return '';
+  const row=(lvl,t)=>`<div class="ri ${lvl}"><span class="dot">${lvl==='ok'?'✓':lvl==='info'?'i':'!'}</span><div class="tx">${t}</div></div>`;
+  let h=`<div class="card"><h3>Итоги: ${label}</h3><div class="rlist">`;
+  h+=row(R.over<=1?'ok':R.over>=Math.ceil(R.n*0.4)?'bad':'warn',`Без перебора <b>${R.n-R.over} из ${R.n}</b> заполненных дней. В среднем <b>${R.avgDiff>0?'+':'−'}${fmt(Math.abs(R.avgDiff))} ккал</b> к норме в день.`);
+  if(R.wch!=null){const good=R.plan!=null?R.wch<=R.plan*0.6:R.wch<=0;h+=row(good?'ok':'warn',`Вес: <b>${R.wch>0?'+':R.wch<0?'−':''}${f1(Math.abs(R.wch))} кг</b>${R.plan!=null?` при плане −${f1(Math.abs(R.plan))} кг`:''}. Колебания из-за воды и соли — норма, смотри на тренд за 2–3 недели.`)}
+  else h+=row('info','Для оценки веса нужно минимум 2 взвешивания за период.');
+  h+=row(R.pAvg>=R.ptAvg*0.8?'ok':'warn',`Белок в среднем <b>${fmt(R.pAvg)} из ${fmt(R.ptAvg)} г</b> в день.`);
+  if(R.lowTop.length)h+=row('info',`Больше всего калорий из напитков, алкоголя, жирной выпечки и сладкого: ${R.lowTop.map(([n,k])=>`${nm(n)} (${fmt(k)})`).join(', ')}.`);
+  h+=row(R.exDays?'ok':'info',R.exDays?`Тренировки: <b>${R.exDays}</b> ${plural(R.exDays,'день','дня','дней')}, ${fmt(R.ex)} ккал.`:'Тренировок не записано.');
+  if(R.wtN)h+=row(R.wt/R.wtN>=(S.goal.water||2000)?'ok':'warn',`Вода в среднем <b>${fL(Math.round(R.wt/R.wtN/50)*50)} л</b> в день.`);
+  h+=`</div>${R.tips.length?`<div class="lab" style="margin-top:14px">Что поправить</div><ol class="tips">${R.tips.map(t=>`<li>${t}</li>`).join('')}</ol>`:`<p class="help" style="margin-top:12px">Серьёзных недочётов нет — так держать.</p>`}</div>`;
+  return h}
 
 /* ---------- графики ---------- */
 function niceMax(v,step){return Math.max(step,Math.ceil(v/step)*step)}
@@ -543,6 +630,7 @@ function viewStats(){
    <div class="tile"><span>Дефицит за период</span><b class="${sumBal<0?'good':'badc'}">${sumBal<0?'−':'+'}${fmt(Math.abs(sumBal))}</b><small>≈ ${estLoss>=0?'−':'+'}${f1(Math.abs(estLoss))} кг жира</small></div>
    <div class="tile"><span>Вес за период</span><b class="${wch==null?'':wch<=0?'good':'badc'}">${wch==null?'—':(wch>0?'+':wch<0?'−':'')+f1(Math.abs(wch))}</b><small>${wch==null?'нужно 2+ замера':'кг по весам'}</small></div>
   </div>`;
+  h+=periodReportCard(a,b,(P.find(x=>x[0]===V.statP)||['','период'])[1].toLowerCase());
   h+=`<div class="card"><h3>Калории по дням</h3>${kcalChart(rows)}</div>`;
   h+=`<div class="card"><h3>Вес</h3>${weightChart(a,b,{goal:S.goal.target})}</div>`;
   const pk=mac.p*4,fk=mac.f*9,ck=mac.c*4,sk=Math.max(1,pk+fk+ck),cc=calc(b);
@@ -829,6 +917,11 @@ SH.about={title:'Как считается',body:()=>`<div class="help" style="f
   <p><b>Беговая дорожка</b> — метаболические формулы ACSM: ходьба VO₂ = 0,1·v + 1,8·v·наклон + 3,5; бег VO₂ = 0,2·v + 0,9·v·наклон + 3,5 (v в м/мин), MET = VO₂ / 3,5.</p>
   <p><b>Встроенная база</b> — около 140 базовых продуктов с ориентировочными значениями (точные — через «Сверить с USDA» в карточке продукта) и около 370 готовых блюд и напитков: McDonald's Romania, Luca, Socului Kebap, Dristor Doner, суши — по официальным данным этих заведений; румынская кухня, супы, плов, стейки, морепродукты, кофе, алкоголь — усреднённо или по USDA. Источник указан в карточке блюда.</p>
   <p><b>Вес и возраст</b> для каждого дня берутся на эту дату: норма меняется по мере похудения.</p></div>`};
+SH.report={full:1,title:st=>'Итог дня · '+fDate(st.d),body:st=>{const R=dayReport(st.d);
+  const head=R.issues===0?`<div class="rhead"><span class="big">👍</span><div><b style="font-size:17px">Отличный день</b><div class="sub">Замечаний нет</div></div></div>`
+    :`<div class="rhead"><span class="big">${R.issues>=3?'💪':'👌'}</span><div><b style="font-size:17px">${R.issues} ${plural(R.issues,'замечание','замечания','замечаний')}</b><div class="sub">${fmt(R.tot.k)} из ${fmt(R.norm)} ккал${st.d===today()?' · день ещё не закончился':''}</div></div></div>`;
+  return head+`<div class="rlist">${R.items.map(x=>`<div class="ri ${x.lvl}"><span class="dot">${x.lvl==='ok'?'✓':x.lvl==='info'?'i':'!'}</span><div class="tx">${x.t}</div></div>`).join('')}</div>
+  <p class="help" style="margin-top:14px">Итог строится по правилам из цифр дня, без учёта контекста (праздник, вахта, болезнь). Это подсказка, а не приговор.</p>`}};
 SH.confirm={title:st=>st.t,body:st=>`<p style="margin-top:0">${st.msg}</p>`,foot:st=>`<div class="btns two" style="margin:0"><button class="btn" data-a="close">Отмена</button><button class="btn pri" style="background:var(--bad);color:#fff" data-a="cfOk">${st.ok||'Удалить'}</button></div>`};
 SH.scan={title:'Сканер штрихкода',body:st=>`<video class="scan" id="sv" playsinline muted autoplay></video><p class="help" id="sst">${st.msg||'Запускаю камеру…'}</p>`};
 
@@ -1001,6 +1094,7 @@ const A={
   ukSave:()=>{S.settings.usdaKey=$('#uk').value.trim();save();closeSheet();toast('Сохранено')},
   installOpen:()=>openSheet('install'),
   themeOpen:()=>openSheet('theme'),
+  repOpen:()=>openSheet('report',{d:V.date}),
   thMode:el=>{S.settings.theme.mode=el.dataset.v;save();applyTheme();refresh();render()},
   aboutOpen:()=>openSheet('about'),
   wipeOpen:()=>openSheet('confirm',{t:'Удалить все данные?',msg:'Дневник, вес, продукты, рецепты и настройки будут удалены с этого телефона. Сначала сделайте резервную копию.',ok:'Удалить всё',fn:()=>{S=blank();save();closeAll();V.tab='diary';V.date=today();render()}}),
