@@ -1,7 +1,7 @@
 // Офлайн-кэш приложения. При обновлении файлов увеличьте номер версии.
 // Схема: при наличии сети всегда берём свежие файлы с сайта (ждём не дольше 3 секунд),
 // без сети или при медленной сети — сохранённую копию. Так обновления видны сразу.
-const VERSION = 'racion-v7';
+const VERSION = 'racion-v8';
 const FILES = ['./', './index.html', './foods.js', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

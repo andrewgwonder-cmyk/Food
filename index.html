@@ -302,7 +302,7 @@ const IC={
 
 /* ========== хранилище ========== */
 const KEY='racion.v1';
-const APP_VERSION='7';
+const APP_VERSION='8';
 function blank(){return{v:1,profile:null,goal:{rate:0.5,target:null,prot:1.8,fatPct:28,ov:{},eatBack:100,water:2000},voyage:null,weights:{},days:{},foods:[],recipes:[],templates:[],settings:{usdaKey:'',lastBackup:null,created:today(),theme:{mode:'system',dark:'20:00',light:'07:00'}}}}
 function normalize(o){const b=blank();o=Object.assign(b,o||{});o.goal=Object.assign(blank().goal,o.goal||{});o.goal.ov=o.goal.ov||{};o.settings=Object.assign(blank().settings,o.settings||{});o.settings.theme=Object.assign(blank().settings.theme,o.settings.theme||{});
   for(const k in o.days){const d=o.days[k];d.m=Object.assign({b:[],l:[],d:[],s:[]},d.m||{});d.ex=d.ex||[]}return o}
@@ -348,6 +348,7 @@ function calc(s){
 function dayNorm(s,cc){cc=cc||calc(s);return cc.kcal+dayEx(s)*S.goal.eatBack/100}
 const EXT=[
   {id:'walk',n:'Ходьба на улице',kind:'walk'},
+  {id:'tread',n:'Беговая дорожка',kind:'tread'},
   {id:'hill',n:'Ходьба в подъём',met:5.3,d:'уклон 1–5%, умеренно-быстрый темп'},
   {id:'gym',n:'Силовая тренировка',met:3.5,d:'тренажёры или свободные веса, 8–15 повторов'},
   {id:'gymh',n:'Силовая, интенсивно',met:6.0,d:'тяжёлые веса, жим, становая'},
@@ -474,7 +475,7 @@ function viewDiary(){
   return h;
 }
 function amountLabel(e){if(e.u&&e.u.l&&e.u.l!=='г'){const m=/^1\s+(.*)$/.exec(e.u.l);return (m?`${f1(e.u.q)} ${m[1]}`:`${f1(e.u.q)} × ${e.u.l}`)+` · ${fmt(e.g)} г`}return e.src==='quick'?'быстрая запись':`${f1(e.g)} г`}
-function exLabel(e){const p=[];if(e.min)p.push(e.min+' мин');if(e.km)p.push(f1(e.km)+' км');if(e.met)p.push('MET '+f1(e.met));return p.join(' · ')||'вручную'}
+function exLabel(e){const p=[];if(e.min)p.push(e.min+' мин');if(e.t==='tread'){p.push(f1(e.spd)+' км/ч');if(e.inc)p.push('наклон '+f1(e.inc)+'%')}else if(e.km)p.push(f1(e.km)+' км');if(e.met)p.push('MET '+f1(e.met));return p.join(' · ')||'вручную'}
 
 /* ---------- графики ---------- */
 function niceMax(v,step){return Math.max(step,Math.ceil(v/step)*step)}
@@ -722,15 +723,21 @@ SH.ex={title:st=>st.editId?'Изменить активность':'Активн
   body:st=>{const t=EXT.find(x=>x.id===st.t);return `<div class="field" style="margin-top:0"><label for="et">Вид</label><select class="inp" id="et">${EXT.map(x=>`<option value="${x.id}"${x.id===st.t?' selected':''}>${esc(x.n)}</option>`).join('')}</select></div>
    ${t.d?`<p class="help" style="margin:6px 2px 0">${esc(t.d)}${t.met?' · MET '+f1(t.met):''}</p>`:''}
    ${t.kind==='manual'?`<div class="field"><label for="en">Название</label><input class="inp" id="en" value="${esc(st.n||'')}" placeholder="Футбол, плавание…"></div><div class="grid2"><div class="field"><label for="ek">Сожжено, ккал</label><input class="inp num" id="ek" inputmode="decimal" value="${esc(st.k||'')}"></div><div class="field"><label for="em">Минут</label><input class="inp num" id="em" inputmode="decimal" value="${esc(st.min||'')}"></div></div><p class="help">Цифры с тренажёра или часов обычно включают покой и бывают завышены.</p>`
+   :t.kind==='tread'?`<div class="lab" style="margin-top:12px">Как двигался</div><div class="seg" style="margin-top:6px"><button data-a="trMode" data-v="walk" class="${st.mode!=='run'?'on':''}">Шёл</button><button data-a="trMode" data-v="run" class="${st.mode==='run'?'on':''}">Бежал</button></div>
+     <div class="grid3"><div class="field"><label for="esp">Скорость, км/ч</label><input class="inp num" id="esp" inputmode="decimal" value="${esc(st.spd??'')}" placeholder="${st.mode==='run'?'9':'5'}"></div><div class="field"><label for="einc">Наклон, %</label><input class="inp num" id="einc" inputmode="decimal" value="${esc(st.inc??'')}" placeholder="0"></div><div class="field"><label for="em">Минут</label><input class="inp num" id="em" inputmode="decimal" value="${esc(st.min||'')}" placeholder="30"></div></div>
+     <p class="help">Скорость и наклон — с табло дорожки. Расчёт по формулам ACSM для ходьбы и бега на дорожке. Если по ходу меняли скорость, впишите среднюю или добавьте отрезки отдельно.</p>`
    :`<div class="grid2"><div class="field"><label for="em">Минут</label><input class="inp num" id="em" inputmode="decimal" value="${esc(st.min||'')}" placeholder="45"></div>${t.kind==='walk'?`<div class="field"><label for="ekm">Километров</label><input class="inp num" id="ekm" inputmode="decimal" value="${esc(st.km||'')}" placeholder="необязательно"></div>`:'<span></span>'}</div>
      ${t.kind==='walk'?`<div class="lab" style="margin-top:12px">Темп, если расстояние неизвестно</div><div class="chips" style="margin-top:6px">${PACE.map(([k,l,v])=>`<button class="chip${st.pace===k?' on':''}" data-a="exPace" data-v="${k}">${l} · ${String(v).replace('.',',')} км/ч</button>`).join('')}</div><p class="help">Расстояние и время можно посмотреть в приложении «Здоровье» или на часах.</p>`:''}`}
    <div class="preview" style="grid-template-columns:1fr 1fr" id="exp"></div>`},
   foot:st=>`<div class="btns ${st.editId?'two':''}" style="margin:0">${st.editId?'<button class="btn bad" data-a="exDel">Удалить</button>':''}<button class="btn pri" data-a="exOk">${st.editId?'Сохранить':'Добавить'}</button></div>`,
-  after:o=>{q(o,'#et').addEventListener('change',e=>{exRead(o);o.st.t=e.target.value;refresh(o)});o.el.querySelectorAll('#em,#ekm,#ek').forEach(i=>i.addEventListener('input',()=>{exRead(o);exPrev(o)}));exPrev(o)}};
-function exRead(o){const st=o.st;const g=s=>{const e=q(o,s);return e?e.value:undefined};st.min=g('#em')??st.min;st.km=g('#ekm')??st.km;st.k=g('#ek')??st.k;st.n=g('#en')??st.n}
+  after:o=>{q(o,'#et').addEventListener('change',e=>{exRead(o);o.st.t=e.target.value;refresh(o)});o.el.querySelectorAll('#em,#ekm,#ek,#esp,#einc').forEach(i=>i.addEventListener('input',()=>{exRead(o);exPrev(o)}));exPrev(o)}};
+function exRead(o){const st=o.st;const g=s=>{const e=q(o,s);return e?e.value:undefined};st.min=g('#em')??st.min;st.km=g('#ekm')??st.km;st.k=g('#ek')??st.k;st.n=g('#en')??st.n;st.spd=g('#esp')??st.spd;st.inc=g('#einc')??st.inc}
 function exCalc(st){const t=EXT.find(x=>x.id===st.t),kg=weightOn(st.date||V.date)||80,min=num(st.min);
   if(t.kind==='manual'){const k=num(st.k);return{kcal:k>0?k:0,met:null,min:min>0?min:null,n:(st.n||'').trim()||'Активность'}}
   if(!(min>0))return{kcal:0,met:t.met||null,min:null,n:t.n};
+  if(t.kind==='tread'){const run=st.mode==='run';let kmh=num(st.spd);if(!(kmh>0))kmh=run?9:5;let g=num(st.inc);if(!(g>=0))g=0;g=Math.min(g,30);
+    const sp=kmh*1000/60,G=g/100,vo2=run?(0.2*sp+0.9*sp*G+3.5):(0.1*sp+1.8*sp*G+3.5),met=vo2/3.5;
+    return{kcal:exKcal(met,kg,min),met,min,km:kmh*min/60,kmh,inc:g,n:'Беговая дорожка · '+(run?'бег':'ходьба')}}
   let met=t.met,km=null;if(t.kind==='walk'){km=num(st.km);let kmh;if(km>0)kmh=km/(min/60);else{km=null;kmh=PACE.find(p=>p[0]===st.pace)[2]}met=walkMet(kmh);return{kcal:exKcal(met,kg,min),met,min,km,kmh,n:t.n}}
   return{kcal:exKcal(met,kg,min),met,min,n:t.n}}
 function exPrev(o){const r=exCalc(o.st);q(o,'#exp').innerHTML=`<div><span>сожжено сверх покоя</span><b>${fmt(r.kcal)} ккал</b></div><div><span>${r.kmh?'скорость':'MET'}</span><b>${r.kmh?f1(r.kmh)+' км/ч':(r.met?f1(r.met):'—')}</b></div>`}
@@ -819,6 +826,7 @@ SH.about={title:'Как считается',body:()=>`<div class="help" style="f
   <p><b>Минимум</b> — норма не опускается ниже 1500 ккал для мужчин и 1200 для женщин.</p>
   <p><b>Белок</b> — граммы на кг желаемого веса (по умолчанию 1,8). <b>Жиры</b> — доля калорий. <b>Углеводы</b> — остаток. <b>Клетчатка</b> — 14 г на 1000 ккал.</p>
   <p><b>Тренировки</b> — (MET − 1) × вес × часы. Значения MET из Compendium of Physical Activities (2024). Единица вычитается, потому что покой уже входит в базовый обмен.</p>
+  <p><b>Беговая дорожка</b> — метаболические формулы ACSM: ходьба VO₂ = 0,1·v + 1,8·v·наклон + 3,5; бег VO₂ = 0,2·v + 0,9·v·наклон + 3,5 (v в м/мин), MET = VO₂ / 3,5.</p>
   <p><b>Встроенная база</b> — около 140 базовых продуктов с ориентировочными значениями (точные — через «Сверить с USDA» в карточке продукта) и около 370 готовых блюд и напитков: McDonald's Romania, Luca, Socului Kebap, Dristor Doner, суши — по официальным данным этих заведений; румынская кухня, супы, плов, стейки, морепродукты, кофе, алкоголь — усреднённо или по USDA. Источник указан в карточке блюда.</p>
   <p><b>Вес и возраст</b> для каждого дня берутся на эту дату: норма меняется по мере похудения.</p></div>`};
 SH.confirm={title:st=>st.t,body:st=>`<p style="margin-top:0">${st.msg}</p>`,foot:st=>`<div class="btns two" style="margin:0"><button class="btn" data-a="close">Отмена</button><button class="btn pri" style="background:var(--bad);color:#fff" data-a="cfOk">${st.ok||'Удалить'}</button></div>`};
@@ -938,9 +946,10 @@ const A={
   rDel:()=>{const id=topS().st.id;openSheet('confirm',{t:'Удалить рецепт?',msg:'Записи в дневнике останутся.',fn:()=>{S.recipes=S.recipes.filter(r=>r.id!==id);save();closeSheet(2);const t=topS();if(t)refresh(t);render()}})},
   exOpen:()=>openSheet('ex',{t:'walk',pace:'norm',date:V.date}),
   exPace:el=>{const o=topS();exRead(o);o.st.pace=el.dataset.v;refresh(o)},
-  exEdit:el=>{const d=S.days[V.date];const e=d.ex.find(x=>x.id===el.dataset.v);openSheet('ex',{editId:e.id,t:e.t,pace:e.pace||'norm',min:e.min||'',km:e.km||'',k:e.t==='manual'?e.kcal:'',n:e.n,date:V.date})},
+  trMode:el=>{const o=topS();exRead(o);o.st.mode=el.dataset.v;refresh(o)},
+  exEdit:el=>{const d=S.days[V.date];const e=d.ex.find(x=>x.id===el.dataset.v);openSheet('ex',{editId:e.id,t:e.t,pace:e.pace||'norm',min:e.min||'',km:e.t==='tread'?'':(e.km||''),k:e.t==='manual'?e.kcal:'',n:e.n,date:V.date,mode:e.mode||'walk',spd:e.spd??'',inc:e.inc??''})},
   exOk:()=>{const o=topS();exRead(o);const st=o.st,r=exCalc(st);if(!(r.kcal>0))return toast(st.t==='manual'?'Укажите калории':'Укажите длительность в минутах');
-    const e={id:st.editId||uid(),t:st.t,n:r.n,min:r.min,km:r.km||null,met:r.met,pace:st.pace,kcal:r0(r.kcal)};const d=getDay(st.date,true);
+    const e={id:st.editId||uid(),t:st.t,n:r.n,min:r.min,km:r.km||null,met:r.met,pace:st.pace,kcal:r0(r.kcal)};if(st.t==='tread'){e.mode=st.mode||'walk';e.spd=r1(r.kmh);e.inc=r1(r.inc)}const d=getDay(st.date,true);
     if(st.editId){const i=d.ex.findIndex(x=>x.id===st.editId);d.ex[i]=e}else d.ex.push(e);save();closeSheet();render();toast(`${st.editId?'Сохранено':'Добавлено'}: ${fmt(e.kcal)} ккал`)},
   exDel:()=>{const st=topS().st;const d=S.days[st.date];d.ex=d.ex.filter(x=>x.id!==st.editId);cleanDay(st.date);save();closeSheet();render()},
   wOpen:el=>openSheet('w',{d:el.dataset.v||V.date}),
