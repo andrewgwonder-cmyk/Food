@@ -318,7 +318,7 @@ const IC={
 
 /* ========== хранилище ========== */
 const KEY='racion.v1';
-const APP_VERSION='11';
+const APP_VERSION='12';
 function blank(){return{v:1,profile:null,goal:{rate:0.5,target:null,prot:1.8,fatPct:28,ov:{},eatBack:100,water:2000},voyage:null,weights:{},days:{},foods:[],recipes:[],templates:[],settings:{usdaKey:'',lastBackup:null,created:today(),theme:{mode:'system',dark:'20:00',light:'07:00'}}}}
 function normalize(o){const b=blank();o=Object.assign(b,o||{});o.goal=Object.assign(blank().goal,o.goal||{});o.goal.ov=o.goal.ov||{};o.settings=Object.assign(blank().settings,o.settings||{});o.settings.theme=Object.assign(blank().settings.theme,o.settings.theme||{});
   for(const k in o.days){const d=o.days[k];d.m=Object.assign({b:[],l:[],d:[],s:[]},d.m||{});d.ex=d.ex||[]}return o}
