@@ -318,7 +318,7 @@ const IC={
 
 /* ========== хранилище ========== */
 const KEY='racion.v1';
-const APP_VERSION='9';
+const APP_VERSION='10';
 function blank(){return{v:1,profile:null,goal:{rate:0.5,target:null,prot:1.8,fatPct:28,ov:{},eatBack:100,water:2000},voyage:null,weights:{},days:{},foods:[],recipes:[],templates:[],settings:{usdaKey:'',lastBackup:null,created:today(),theme:{mode:'system',dark:'20:00',light:'07:00'}}}}
 function normalize(o){const b=blank();o=Object.assign(b,o||{});o.goal=Object.assign(blank().goal,o.goal||{});o.goal.ov=o.goal.ov||{};o.settings=Object.assign(blank().settings,o.settings||{});o.settings.theme=Object.assign(blank().settings.theme,o.settings.theme||{});
   for(const k in o.days){const d=o.days[k];d.m=Object.assign({b:[],l:[],d:[],s:[]},d.m||{});d.ex=d.ex||[]}return o}
@@ -1123,5 +1123,8 @@ try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTh
 render();
 if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(()=>{})}
 </script>
+<link rel="stylesheet" href="skin.css">
+<script>applyTheme=function(){document.documentElement.setAttribute('data-theme','dark')};applyTheme();(function(){const h=new Date().getHours();window.LIGHT=h>=5&&h<14?'morning':h>=14&&h<20?'evening':'night'})()</script>
+<script src="tag.js"></script><script src="man.js"></script><script src="light.js"></script>
 </body>
 </html>
