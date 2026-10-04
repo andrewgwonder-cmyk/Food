@@ -1,0 +1,96 @@
+/* «Свет»: тёмное пыльное пространство и диагональный луч; карточки — дымчатое стекло, сквозь которое светит луч; тени падают от света */
+:root{color-scheme:dark;--ink:#f6e8d6;--mut:rgba(246,232,214,.62);--line:rgba(255,220,180,.09);
+ --mb:#ffb347;--ml:#86dc7c;--md:#a395ff;--ms:#ff86ad;--ma:#ff8f52;--mw:#74c8ff;--mk:#d9c2a5;
+ --plate:rgba(24,10,6,.56);--rim:rgba(255,214,170,.26);--sx:16px;--sy:22px;--glow:rgba(255,170,90,.38);--bg:url(art/L_morning.jpg);--bgc:#3a1309}
+html[data-light=evening]{--plate:rgba(28,8,6,.58);--sx:-16px;--glow:rgba(255,110,60,.4);--bg:url(art/L_evening.jpg);--bgc:#2e0c08}
+html[data-light=night]{--ink:#e6edf8;--mut:rgba(220,230,245,.6);--line:rgba(190,210,240,.09);--plate:rgba(8,12,22,.6);--rim:rgba(180,205,245,.24);--sx:-12px;--glow:rgba(150,180,240,.3);--bg:url(art/L_night.jpg);--bgc:#0b111d}
+html{background:var(--bgc)!important}body{background:transparent!important;color:var(--ink)}
+body::before{content:"";position:fixed;inset:0;z-index:-2;background:var(--bg) center/cover no-repeat}
+#dust{position:fixed;inset:0;z-index:-1;pointer-events:none}
+.top{background:linear-gradient(180deg,rgba(10,4,2,.45),rgba(10,4,2,0))!important;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:var(--ink)}
+.top .ibtn{color:var(--ink)}.datebtn small{color:var(--mut)!important}
+.datebtn b,.ring .c b,.sec-h h3,.repbtn b{font-family:ui-serif,"New York","Iowan Old Style",Georgia,serif!important;font-weight:600}
+.datebtn b{font-size:22px;letter-spacing:.01em}.sec-h h3{font-size:20px}
+.budget{background:linear-gradient(155deg,rgba(255,236,214,.17),rgba(255,236,214,.04))!important;backdrop-filter:blur(16px) saturate(1.35);-webkit-backdrop-filter:blur(16px) saturate(1.35);
+ border:1px solid rgba(255,220,180,.14);border-top-color:var(--rim);border-radius:26px!important;color:var(--ink);
+ box-shadow:var(--sx) var(--sy) 50px -10px rgba(0,0,0,.55),0 0 80px -20px var(--glow)!important}
+.budget .rk,.budget .mac span,.budget .mac em,.ring .c small{color:var(--mut)!important}.budget .rk b,.budget .mac b{color:var(--ink)}
+.budget .rsep{background:var(--line)}.budget .mbar{background:rgba(255,255,255,.08)}
+.ring svg circle:first-child{stroke:rgba(255,255,255,.09)!important}
+.ring svg{filter:drop-shadow(0 0 10px var(--glow))}
+.ring .c b{font-size:40px;text-shadow:0 0 24px var(--glow)}
+.sec,.repbtn{background:var(--plate)!important;backdrop-filter:blur(12px) saturate(1.2);-webkit-backdrop-filter:blur(12px) saturate(1.2);border:1px solid rgba(255,220,180,.06);border-top-color:var(--rim);
+ border-radius:22px!important;color:var(--ink);box-shadow:var(--sx) var(--sy) 40px -12px rgba(0,0,0,.6)!important;position:relative;overflow:hidden}
+.sec[data-m]::before{content:"";position:absolute;left:0;top:18px;bottom:18px;width:3px;border-radius:0 3px 3px 0;background:var(--c);box-shadow:0 0 12px 1px var(--c)}
+.sec[data-m=b]{--c:var(--mb)}.sec[data-m=l]{--c:var(--ml)}.sec[data-m=d]{--c:var(--md)}.sec[data-m=s]{--c:var(--ms)}.sec[data-m=a]{--c:var(--ma)}.sec[data-m=w]{--c:var(--mw)}.sec[data-m=k]{--c:var(--mk)}
+.sec .row{border-top-color:var(--line)}
+.sec small,.sec .sec-h .k,.sec .empty,.repbtn small{color:var(--mut)!important}
+.sec[data-m] .mtile{background:color-mix(in srgb,var(--c) 16%,transparent)!important;color:var(--c)!important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 30%,transparent)}
+.sec[data-m] .plus{background:transparent!important;color:var(--c)!important;box-shadow:inset 0 0 0 1.5px var(--c),0 0 14px -2px var(--c)}
+.repbtn .mtile{background:rgba(255,255,255,.08)!important;color:var(--ink)!important}
+.sec[data-m=w] .btn{background:rgba(255,255,255,.07)!important;color:var(--mw)!important;box-shadow:inset 0 0 0 1px rgba(116,200,255,.25)}
+.sec[data-m=w] .cups .f{color:var(--mw);filter:drop-shadow(0 0 4px rgba(116,200,255,.6))}.sec[data-m=w] .cups .e{color:rgba(255,255,255,.18)}
+#tabs{background:rgba(12,5,3,.62)!important;backdrop-filter:blur(18px) saturate(1.3);border-top-color:rgba(255,220,180,.08)!important}
+html[data-light=night] #tabs{background:rgba(6,9,16,.66)!important}
+.tab{color:var(--mut)!important}.tab.on{color:var(--ink)!important}.tab.on svg{background:rgba(255,255,255,.1)!important}
+
+#walker{margin:-2px 18px 14px;position:relative;z-index:1}
+#walker .lane{position:relative;height:58px}
+#walker .lane::before{content:"";position:absolute;left:0;right:0;bottom:8px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.28) 8%,rgba(255,255,255,.28) 92%,transparent)}
+#walker .done{position:absolute;left:0;bottom:8px;height:2px;width:calc(var(--p)*100%);border-radius:2px;background:linear-gradient(90deg,transparent,var(--glowc,#ffd28a));box-shadow:0 0 10px var(--glowc,#ffd28a)}
+#walker .flag{position:absolute;right:6px;bottom:9px;width:2px;height:22px;background:rgba(255,255,255,.55)}
+#walker .flag::after{content:"";position:absolute;left:2px;top:0;border-left:11px solid var(--glowc,#ffd28a);border-top:5px solid transparent;border-bottom:5px solid transparent;filter:drop-shadow(0 0 4px var(--glowc,#ffd28a))}
+#walker .lbl{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--mut);margin-top:2px}
+#walker .lbl b{font-weight:600;color:var(--ink);font-family:ui-serif,Georgia,serif;font-size:13px;letter-spacing:.01em}
+html[data-light=evening]{--glowc:#ffa66b}html[data-light=night]{--glowc:#bcd0ff}#walker .lbl{text-shadow:0 1px 8px rgba(0,0,0,.75),0 0 2px rgba(0,0,0,.5)}
+
+#walker .fig{position:absolute;bottom:4px;left:calc(var(--p)*100%);transform:translateX(-50%);transition:left var(--dur,1.5s) cubic-bezier(.45,.05,.55,.95);width:40px;height:58px}
+#walker .done{transition:width var(--dur,1.5s) cubic-bezier(.45,.05,.55,.95)}
+#walker .man{width:40px;height:58px;display:block;overflow:visible;filter:drop-shadow(0 0 7px var(--glow))}
+#walker .fig.left .man{transform:scaleX(-1)}
+#walker .sh{position:absolute;bottom:2px;left:50%;width:58px;height:6px;background:radial-gradient(closest-side,rgba(0,0,0,.6),transparent);transform-origin:0 50%;transform:skewX(var(--shk,-55deg))}
+#walker.over .flag::after{border-left-color:#ff7a6b}
+#walker .lane{height:62px}
+@media (prefers-reduced-motion:reduce){.man *{animation:none!important}#walker .fig,#walker .done{transition:none}}
+html[data-light=morning]{--glowc:#ffd28a}
+html{--manmid:#3a2519;--mandark:#170e0a}
+html[data-light=night]{--manmid:#26324a;--mandark:#0d1220}
+#walker .lane{height:70px}
+.man .torso,.man .face{fill:url(#rim)}
+.man .limb{fill:none;stroke:url(#rim);stroke-width:5.4;stroke-linecap:round}
+.man .arm .limb{stroke-width:4.6}.man .arm .edge{fill:none;stroke:var(--mandark);stroke-width:6.6;stroke-linecap:round}
+.man .back .limb{stroke:var(--mandark)}.man .back .hand{fill:var(--mandark)}.man .hand{fill:var(--manmid)}
+.man .shoe{fill:var(--mandark)}
+.man .eye{fill:#fff3e2}.man .cheek{fill:none;stroke:var(--glowc);stroke-width:.9;stroke-linecap:round;opacity:.8}
+.man .cap,.man .cuff{fill:var(--capc)}.man .cuff{opacity:.85}
+.man .scarf,.man .tail,.man .pom{fill:var(--glowc)}
+.man .shd{fill:rgba(0,0,0,.35)}
+.man .leg,.man .arm,.man .head,.man .bob,.man .tail{transform-box:view-box}
+.man .leg{transform-origin:22px 41px}.man .arm{transform-origin:22px 26px}
+.man .head{transform-origin:22px 21px;animation:look 7s ease-in-out infinite}
+.man .bob{transform-origin:22px 57px;animation:breathe 3.2s ease-in-out infinite}
+.man .tail{transform-origin:16px 24.4px;animation:flut 2.4s ease-in-out infinite}
+.walk .man .bob{animation:bob .52s linear infinite}
+.walk .man .leg,.walk .man .arm{animation:swing .52s ease-in-out infinite}
+.walk .man .leg.back,.walk .man .arm.front{animation-delay:-.26s}
+.walk .man .tail{animation:flut .26s ease-in-out infinite}
+.walk .man .head{animation:none;transform:rotate(4deg)}
+.arrive .man .arm.front{animation:wave 1s ease-in-out}
+@keyframes swing{0%,100%{transform:rotate(28deg)}50%{transform:rotate(-28deg)}}
+@keyframes bob{0%,50%,100%{transform:translateY(0)}25%,75%{transform:translateY(-1.8px)}}
+@keyframes breathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.025)}}
+@keyframes look{0%,40%,100%{transform:rotate(0)}48%,62%{transform:rotate(-8deg)}70%{transform:rotate(3deg)}}
+@keyframes flut{0%,100%{transform:rotate(0)}50%{transform:rotate(-14deg)}}
+@keyframes wave{0%,100%{transform:rotate(0)}30%{transform:rotate(-155deg)}50%{transform:rotate(-125deg)}70%{transform:rotate(-155deg)}}
+html{--capc:#7a2e22}html[data-light=evening]{--capc:#5b1f1a}html[data-light=night]{--capc:#2c3b63}
+.stage{position:relative;height:84px;margin:-6px 0 4px;pointer-events:none}
+.stage canvas{position:absolute;left:0;top:0;width:100%;height:84px;display:block}
+.stage::after{content:"";position:absolute;left:14px;right:14px;top:70px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.16) 12%,rgba(255,255,255,.16) 88%,transparent)}
+.cups.glx{gap:6px}.cups.glx svg{width:25px;height:40px;overflow:visible}
+
+#manlayer{position:fixed;top:0;left:0;height:84px;z-index:-1;pointer-events:none;will-change:transform}
+.gapA{height:84px;margin:-6px 0 4px}.gapZ{height:96px}
+
+/* остальные экраны: те же стеклянные плашки */
+.card{background:var(--plate)!important;backdrop-filter:blur(12px) saturate(1.2);-webkit-backdrop-filter:blur(12px) saturate(1.2);border:1px solid rgba(255,220,180,.06);border-top-color:var(--rim);box-shadow:0 10px 30px -12px rgba(0,0,0,.55)}
+.card h3,.card .lab{font-family:ui-serif,"New York","Iowan Old Style",Georgia,serif}
