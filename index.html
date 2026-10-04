@@ -124,6 +124,7 @@ button{cursor:pointer;border:0;background:none;padding:0}
 
 .wbody{padding:2px 16px 14px 66px;display:grid;gap:12px}
 .cups{display:flex;flex-wrap:wrap;gap:4px}
+.wsrc{font-size:12.5px;color:var(--muted);padding:0 16px 4px 66px;margin-top:-6px}
 .cups svg{width:22px;height:26px}
 .cups .f{color:var(--water)}.cups .e{color:var(--line)}
 .wbtns{display:grid;grid-template-columns:1fr 1.3fr 1.3fr;gap:8px}
@@ -339,7 +340,14 @@ function mealTot(arr){const t=N0();for(const e of arr)addN(t,entN(e));return t}
 function dayEx(s){const d=S.days[s];return d?d.ex.reduce((a,e)=>a+(e.kcal||0),0):0}
 function hasFood(s){const d=S.days[s];return !!d&&Object.values(d.m).some(a=>a.length)}
 function dayEmpty(s){const d=S.days[s];return !d||(!hasFood(s)&&!d.ex.length&&!d.wt)}
-function dayWater(s){const d=S.days[s];return d&&d.wt||0}
+// Вода: отмеченные стаканы + чай, кофе и минеральная вода из дневника (по объёму, 1 г = 1 мл)
+const DRINK_IDS=new Set(['b138','b139','b430','b431','b432','b433','b434','b435','b436','b437','b438','b439','b440','b441','b442','b443','b444','b507','b508','b509','b517']);
+const HIMIN_IDS=new Set(['b517']);
+const RX_DRINK_IN=/\b(tea|coffee|espresso|americano|cappuccino|latte|ceai|cafea|borjomi)\b|чай|кофе|минерал|боржоми|mineral water|apă minerală|apa minerala/i;
+const RX_DRINK_OUT=/ice tea|iced tea|lipton|tonic|3-in-1|liqueur|ликёр|ликер|cake|торт|печень|cookie|candy|конфет|tiramisu|тирамису/i;
+function isDrink(e){if(e.src==='quick')return false;if(e.src==='base'&&e.ref&&/^b\d+$/.test(e.ref))return DRINK_IDS.has(e.ref);const n=e.n||'';return RX_DRINK_IN.test(n)&&!RX_DRINK_OUT.test(n)}
+function dayDrinks(s){const d=S.days[s];let ml=0,hi=0;if(d)for(const a of Object.values(d.m))for(const e of a){if(!(e.g>0)||!isDrink(e))continue;ml+=e.g;if(e.src==='base'&&HIMIN_IDS.has(e.ref)||/borjomi|боржоми/i.test(e.n||''))hi+=e.g}return{ml,hi}}
+function dayWater(s){const d=S.days[s];return (d&&d.wt||0)+dayDrinks(s).ml}
 function wKeys(){return Object.keys(S.weights).sort()}
 function weightOn(s){const ks=wKeys();let v=null;for(const k of ks){if(k<=s)v=S.weights[k];else break}if(v==null&&ks.length)v=S.weights[ks[0]];return v}
 function ageOn(s){const b=pd(S.profile.birth),d=pd(s);let a=d.getFullYear()-b.getFullYear();if(d.getMonth()<b.getMonth()||(d.getMonth()===b.getMonth()&&d.getDate()<b.getDate()))a--;return a}
@@ -482,9 +490,10 @@ function viewDiary(){
   h+=exs.length?exs.map(e=>`<button class="row" data-a="exEdit" data-v="${e.id}"><div class="t"><b>${esc(e.n)}</b><small>${esc(exLabel(e))}</small></div><div class="v">${fmt(e.kcal)}<small>ккал</small></div></button>`).join(''):`<div class="empty" style="padding-left:66px">Спортзал, прогулки, тренажёры</div>`;
   h+='</section>';
   const wt=dayWater(s),wg=S.goal.water||2000,nc=Math.min(16,Math.ceil(wg/250)),full=Math.min(nc,Math.floor(wt/250));
-  h+=`<section class="sec" aria-label="Вода"><div class="sec-h">${mtile('w')}<h3>Вода</h3><span class="k">${fL(wt)} / ${fL(wg)} л${wt>=wg?' ✓':''}</span></div>
+  const dml=dayDrinks(s).ml,wman=(day&&day.wt)||0;
+  h+=`<section class="sec" aria-label="Вода"><div class="sec-h">${mtile('w')}<h3>Вода</h3><span class="k">${fL(wt)} / ${fL(wg)} л${wt>=wg?' ✓':''}</span></div>${dml?`<div class="wsrc">из дневника: чай, кофе, минералка — ${fL(dml)} л</div>`:''}
     <div class="wbody"><div class="cups" aria-hidden="true">${Array.from({length:nc},(_,i)=>i<full?'<span class="f"><svg viewBox="0 0 22 26" fill="currentColor"><path d="M3 2h16l-2 21.5a1.6 1.6 0 0 1-1.6 1.5H6.6A1.6 1.6 0 0 1 5 23.5z" opacity=".18"/><path d="M5.6 9h10.8l-1.3 14.2a1 1 0 0 1-1 .8H7.9a1 1 0 0 1-1-.8z"/></svg></span>':'<span class="e"><svg viewBox="0 0 22 26" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 2h16l-2 21.5a1.6 1.6 0 0 1-1.6 1.5H6.6A1.6 1.6 0 0 1 5 23.5z"/></svg></span>').join('')}</div>
-    <div class="wbtns"><button class="btn" data-a="wtr" data-v="-250" ${wt?'':'disabled style="opacity:.4"'} aria-label="Убрать 250 мл">−250</button><button class="btn wat" data-a="wtr" data-v="250">+250 мл</button><button class="btn wat" data-a="wtr" data-v="500">+500 мл</button></div></div></section>`;
+    <div class="wbtns"><button class="btn" data-a="wtr" data-v="-250" ${wman?'':'disabled style="opacity:.4"'} aria-label="Убрать 250 мл">−250</button><button class="btn wat" data-a="wtr" data-v="250">+250 мл</button><button class="btn wat" data-a="wtr" data-v="500">+500 мл</button></div></div></section>`;
   const w=S.weights[s];
   h+=`<section class="sec"><button class="weightline row" style="border:0;padding-left:14px" data-a="wOpen">${mtile('k')}<div class="t"><b>Вес</b><small>${w!=null?'записан за этот день':'не записан за этот день'}</small></div>${w!=null?`<b class="num">${f1(w)} кг</b>`:`<span class="plus">${IC.plus}</span>`}</button></section>`;
   if(hasFood(s)&&!isPlan)h+=`<button class="repbtn" data-a="repOpen">${mtile('r')}<div style="flex:1;min-width:0"><b>Итог дня</b><small>Что получилось и что поправить</small></div>${IC.chev.replace('<svg','<svg width="20" height="20" style="color:var(--muted)"')}</button>`;
@@ -517,6 +526,7 @@ function dayReport(s){
   if(tot.k>800){const ev=(mealTot(d.m.d).k+mealTot(d.m.s).k)/tot.k;if(ev>0.55)add('warn',`<b>${r0(ev*100)}% калорий</b> пришлось на ужин и перекусы. Попробуй перенести часть еды на завтрак и обед: вечером легче переесть.`)}
   const wt=dayWater(s),wg=S.goal.water||2000;
   if(wt>=wg)add('ok',`Вода в норме: <b>${fL(wt)} л</b>.`);else if(wt>0)add('warn',`Воды <b>${fL(wt)} из ${fL(wg)} л</b>.`);else add('info','Вода не отмечена.');
+  {const hi=dayDrinks(s).hi;if(hi>500)add('warn',`Боржоми <b>${fL(hi)} л</b>: в литре 1–2 г натрия, это почти вся дневная норма соли. Основной водой лучше обычная или столовая минеральная; завтра весы могут показать лишнее из‑за задержки воды.`)}
   if(d.ex.length)add('ok',`Активность: <b>${fmt(dayEx(s))} ккал</b> (${d.ex.map(e=>esc(e.n)).join(', ')}).`);
   const miss=[['b','завтрак'],['l','обед'],['d','ужин']].filter(([k])=>!d.m[k].length).map(a=>a[1]);
   if(miss.length&&s<today())add('info',`Не записан ${miss.join(', ')}. Если ел, добавь: иначе итог неточный.`);
