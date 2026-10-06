@@ -355,7 +355,8 @@ function calc(s){
   s=s||today();const P=S.profile;if(!P)return null;
   const w=weightOn(s)||80,a=ageOn(s),G=S.goal;
   const bmr=10*w+6.25*P.h-5*a+(P.sex==='f'?-161:5);
-  const tdee=bmr*P.act;
+  const adj=+(S.goal.adj||0);
+  const tdee=bmr*P.act+adj;
   const losing=G.target!=null&&w>G.target+0.05;
   const def=losing?G.rate*KCAL_PER_KG/7:0;
   const floor=P.sex==='f'?1200:1500;
@@ -367,9 +368,33 @@ function calc(s){
   const p=G.ov.p?+G.ov.p:auto.p, f=G.ov.f?+G.ov.f:auto.f;
   auto.c=Math.max(0,(kcal-p*4-f*9)/4);
   const c=G.ov.c?+G.ov.c:auto.c;
-  return{w,a,bmr,tdee,def,kcal,clamped,floor,p,f,c,fb:14*kcal/1000,auto,losing};
+  return{w,a,bmr,tdee,adj,def,kcal,clamped,floor,p,f,c,fb:14*kcal/1000,auto,losing};
 }
 function dayNorm(s,cc){cc=cc||calc(s);return cc.kcal+dayEx(s)*S.goal.eatBack/100}
+
+/* Адаптация нормы: реальный расход = средняя еда за полные дни − изменение веса по линии тренда × 7700.
+   Сравниваем с расчётом формулы и предлагаем поправку не больше ±150 ккал за раз. */
+const ADAPT={days:28,minFull:14,minWeigh:8,minSpan:14,step:150,minDelta:75};
+function dayFull(s){const d=S.days[s];if(!d)return false;const meals=Object.values(d.m).filter(a=>a.length).length;if(meals<2)return false;
+ const k=dayTot(s).k;return k>=Math.max(800,0.5*(dayNorm(s)-(+(S.goal.adj||0))))}
+function adaptCalc(){if(!S.profile)return{ok:false,why:'Нет профиля.'};
+ const t=today(),b=addD(t,-1),a=addD(b,-(ADAPT.days-1));
+ const ws=wKeys().filter(k=>k>=a&&k<=t);
+ const full=[];for(let s=a;s<=b;s=addD(s,1))if(dayFull(s))full.push(s);
+ const res={ok:false,full:full.length,weigh:ws.length,a,b};
+ if(full.length<ADAPT.minFull){res.why=`Нужно минимум ${ADAPT.minFull} полных дней за 4 недели (есть ${full.length}). Полный день — записано хотя бы два приёма пищи и не меньше половины нормы.`;return res}
+ if(ws.length<ADAPT.minWeigh||dDiff(ws[0],ws[ws.length-1])<ADAPT.minSpan){res.why=`Нужно минимум ${ADAPT.minWeigh} взвешиваний за 4 недели на отрезке от 2 недель (есть ${ws.length}).`;return res}
+ // наклон веса — линейная регрессия, кг в день
+ const xs=ws.map(k=>dDiff(ws[0],k)),ys=ws.map(k=>S.weights[k]);const n=xs.length,mx=xs.reduce((p,v)=>p+v,0)/n,my=ys.reduce((p,v)=>p+v,0)/n;
+ let sxy=0,sxx=0;for(let i=0;i<n;i++){sxy+=(xs[i]-mx)*(ys[i]-my);sxx+=(xs[i]-mx)**2}const slope=sxx?sxy/sxx:0;
+ let eat=0,model=0;for(const s of full){eat+=dayTot(s).k;model+=calc(s).tdee+dayEx(s)*S.goal.eatBack/100}eat/=full.length;model/=full.length;
+ const real=eat-slope*KCAL_PER_KG;const delta=real-model;
+ Object.assign(res,{slope,eat,model,real,delta,weekly:slope*7});
+ if(Math.abs(delta)>900){res.why='Расхождение с формулой слишком большое — похоже, часть еды не записана или вес скачет из‑за воды. Поправку не предлагаю.';return res}
+ res.ok=true;const cur=+(S.goal.adj||0);const stepV=Math.max(-ADAPT.step,Math.min(ADAPT.step,delta));
+ res.propose=Math.abs(delta)>=ADAPT.minDelta?Math.round((cur+stepV)/10)*10:null;
+ return res}
+function adaptDue(){const G=S.goal;if(G.adjAt&&dDiff(G.adjAt,today())<7)return null;const r=adaptCalc();return r.ok&&r.propose!=null&&r.propose!==(G.adj||0)?r:null}
 const EXT=[
   {id:'walk',n:'Ходьба на улице',kind:'walk'},
   {id:'tread',n:'Беговая дорожка',kind:'tread'},
@@ -479,6 +504,7 @@ function viewDiary(){
       <div class="rk"><span>Норма</span><b>${fmt(cc.kcal)}</b></div>${ex?`<div class="rk"><span>Тренировки</span><b style="color:var(--ma)">+${fmt(bonus)}</b></div>`:''}</div></div>
     <div class="macros">${mac('Белки',tot.p,cc.p,'var(--prot)')}${mac('Жиры',tot.f,cc.f,'var(--fat)')}${mac('Углеводы',tot.c,cc.c,'var(--carb)')}${mac('Клетчатка',tot.fb,cc.fb,'var(--fib)')}</div>
   </section>`;
+  if(s===t){const ad=adaptDue();if(ad)h+=`<div class="banner"><span>Норму можно уточнить по вашим данным за 4 недели: ${ad.propose-(S.goal.adj||0)<0?'−':'+'}${fmt(Math.abs(ad.propose-(S.goal.adj||0)))} ккал.</span><button class="link" data-a="adGo">Посмотреть</button></div>`}
   const lb=S.settings.lastBackup, created=S.settings.created||t;
   if(s===t&&Object.keys(S.days).length>=3&&(!lb?dDiff(created,t)>=7:dDiff(lb,t)>=14))h+=`<div class="banner"><span>${lb?'Резервная копия делалась '+fDate(lb)+'.':'Резервной копии ещё нет.'} Сохраните её в «Файлы», чтобы данные не потерялись.</span><button class="link" data-a="backupOpen">Сохранить</button></div>`;
   for(const[k,l]of MEALS){const arr=day?day.m[k]:[];const mt=mealTot(arr);
@@ -685,7 +711,8 @@ function viewGoals(){
 
   h+=`<div class="card"><h3>Дневная норма</h3><div class="big">${fmt(cc.kcal)} <span style="font-size:18px">ккал</span></div>
     <div style="margin-top:8px"><div class="kv"><span>Базовый обмен (Миффлин — Сан Жеор)</span><b>${fmt(cc.bmr)}</b></div>
-    <div class="kv"><span>С учётом активности × ${String(P.act).replace('.',',')}</span><b>${fmt(cc.tdee)}</b></div>
+    <div class="kv"><span>С учётом активности × ${String(P.act).replace('.',',')}</span><b>${fmt(cc.tdee-cc.adj)}</b></div>
+    ${cc.adj?`<div class="kv"><span>Поправка по вашим данным</span><b>${cc.adj>0?'+':'−'}${fmt(Math.abs(cc.adj))}</b></div>`:''}
     <div class="kv"><span>Дефицит для похудения</span><b>${cc.losing?'−'+fmt(cc.def):'0'}</b></div>
     <div class="kv"><span>Плюс тренировки за день</span><b>${G.eatBack}%</b></div></div>
     ${cc.clamped&&!G.ov.k?`<div class="warnbox">Расчёт дал бы меньше ${fmt(cc.floor)} ккал. Норма поднята до этого минимума, поэтому худеть вы будете медленнее выбранного темпа. Ниже этого уровня без врача опускаться не стоит.</div>`:''}
@@ -694,6 +721,18 @@ function viewGoals(){
     <div class="chips" style="margin-top:6px">${[0,50,100].map(v=>`<button class="chip${G.eatBack===v?' on':''}" data-a="gEat" data-v="${v}">${v}%</button>`).join('')}</div>
     <p class="help" style="margin:8px 0 0">Тренировки считаются по таблице MET (Compendium of Physical Activities) за вычетом покоя. Если вес стоит, поставьте 50%.</p></div>`;
 
+  {const r=adaptCalc(),G2=S.goal,due=adaptDue();
+  h+=`<div class="card" id="adapt"><h3>Адаптация нормы</h3>`;
+  if(r.ok){h+=`<div class="kv"><span>Ели в среднем (${r.full} полных дней)</span><b>${fmt(r.eat)}</b></div>
+    <div class="kv"><span>Вес по линии тренда</span><b>${r.weekly>0?'+':r.weekly<0?'−':''}${f2(Math.abs(r.weekly))} кг/нед</b></div>
+    <div class="kv"><span>Реальный расход по данным</span><b>${fmt(r.real)}</b></div>
+    <div class="kv"><span>Расход по формуле</span><b>${fmt(r.model)}</b></div>`;
+   if(due)h+=`<div class="banner"><span>По вашим данным расход ${r.delta<0?'ниже':'выше'} формулы на ${fmt(Math.abs(r.delta))} ккал. Предлагаю поправку ${due.propose>0?'+':'−'}${fmt(Math.abs(due.propose))} ккал (шаг не больше ${ADAPT.step}).</span></div>
+    <div class="btns two"><button class="btn pri" data-a="adAccept" data-v="${due.propose}">Принять</button><button class="btn" data-a="adSkip">Не сейчас</button></div>`;
+   else h+=`<p class="help" style="margin:8px 0 0">${r.propose==null?'Формула совпадает с вашими данными, поправка не нужна.':'Следующая проверка — через неделю после последнего решения.'}</p>`}
+  else h+=`<p class="help" style="margin:0">${r.why}</p>`;
+  if(G2.adj)h+=`<div class="btns"><button class="btn" data-a="adReset">Сбросить поправку (${G2.adj>0?'+':'−'}${fmt(Math.abs(G2.adj))})</button></div>`;
+  h+=`<p class="help" style="margin:8px 0 0">Считается по последним 4 неделям: средняя еда за полные дни минус изменение веса по линии тренда (1 кг ≈ 7700 ккал). Неполные дни не учитываются. Чем честнее записи и чаще взвешивания, тем точнее.</p></div>`;}
   h+=`<div class="card"><h3>Вода</h3><div class="lab">Цель на день (напитки)</div><div class="chips" style="margin-top:6px">${[1500,2000,2500,3000,3500].map(v=>`<button class="chip${(G.water||2000)===v?' on':''}" data-a="gWater" data-v="${v}">${String(v/1000).replace('.',',')} л</button>`).join('')}</div>
     <p class="help" style="margin:8px 0 0">EFSA считает достаточным для мужчин 2,5 л воды в сутки, для женщин 2,0 л, включая воду из еды и супов. На напитки обычно приходится около 2 л. В жару, на тренировках и при физической работе нужно больше.</p></div>`;
   h+=`<div class="card"><h3>Белки, жиры, углеводы</h3>
@@ -926,7 +965,8 @@ SH.about={title:'Как считается',body:()=>`<div class="help" style="f
   <p><b>Тренировки</b> — (MET − 1) × вес × часы. Значения MET из Compendium of Physical Activities (2024). Единица вычитается, потому что покой уже входит в базовый обмен.</p>
   <p><b>Беговая дорожка</b> — метаболические формулы ACSM: ходьба VO₂ = 0,1·v + 1,8·v·наклон + 3,5; бег VO₂ = 0,2·v + 0,9·v·наклон + 3,5 (v в м/мин), MET = VO₂ / 3,5.</p>
   <p><b>Встроенная база</b> — около 140 базовых продуктов с ориентировочными значениями (точные — через «Сверить с USDA» в карточке продукта) и около 370 готовых блюд и напитков: McDonald's Romania, Luca, Socului Kebap, Dristor Doner, суши — по официальным данным этих заведений; румынская кухня, супы, плов, стейки, морепродукты, кофе, алкоголь — усреднённо или по USDA. Источник указан в карточке блюда.</p>
-  <p><b>Вес и возраст</b> для каждого дня берутся на эту дату: норма меняется по мере похудения.</p></div>`};
+  <p><b>Вес и возраст</b> для каждого дня берутся на эту дату: норма меняется по мере похудения.</p>
+  <p><b>Адаптация</b> — по последним 4 неделям: реальный расход = средняя еда за полные дни − наклон веса по линейному тренду × 7700. Если он отличается от формулы больше чем на 75 ккал, раз в неделю предлагается поправка не больше ±150 ккал; принимаете вы. Нужно минимум 14 полных дней и 8 взвешиваний.</p></div>`};
 SH.report={full:1,title:st=>'Итог дня · '+fDate(st.d),body:st=>{const R=dayReport(st.d);
   const head=R.issues===0?`<div class="rhead"><span class="big">👍</span><div><b style="font-size:17px">Отличный день</b><div class="sub">Замечаний нет</div></div></div>`
     :`<div class="rhead"><span class="big">${R.issues>=3?'💪':'👌'}</span><div><b style="font-size:17px">${R.issues} ${plural(R.issues,'замечание','замечания','замечаний')}</b><div class="sub">${fmt(R.tot.k)} из ${fmt(R.norm)} ккал${st.d===today()?' · день ещё не закончился':''}</div></div></div>`;
@@ -1085,6 +1125,10 @@ const A={
   gRate:el=>{S.goal.rate=+el.dataset.v;save();render()},
   gEat:el=>{S.goal.eatBack=+el.dataset.v;save();render()},
   gWater:el=>{S.goal.water=+el.dataset.v;save();render()},
+  adAccept:el=>{S.goal.adj=+el.dataset.v;S.goal.adjAt=today();(S.goal.adjHist=S.goal.adjHist||[]).push({d:today(),adj:S.goal.adj});save();render();toast('Норма обновлена по вашим данным')},
+  adSkip:()=>{S.goal.adjAt=today();save();render();toast('Напомню через неделю')},
+  adReset:()=>{S.goal.adj=0;S.goal.adjAt=today();save();render();toast('Поправка сброшена')},
+  adGo:()=>{V.tab='goals';render();setTimeout(()=>{const e=document.getElementById('adapt');e&&e.scrollIntoView({behavior:'smooth',block:'center'})},60)},
   wtr:el=>{const v=+el.dataset.v,d=getDay(V.date,true);d.wt=Math.max(0,(d.wt||0)+v);cleanDay(V.date);save();render();if(v>0)toast('+'+v+' мл воды')},
   gProt:el=>{S.goal.prot=+el.dataset.v;save();render()},
   gFat:el=>{S.goal.fatPct=+el.dataset.v;save();render()},
