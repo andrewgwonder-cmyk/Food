@@ -123,6 +123,24 @@ button{cursor:pointer;border:0;background:none;padding:0}
 .weightline b{font-family:var(--f-num);font-size:18px;font-weight:600}
 
 .wbody{padding:2px 16px 14px 66px;display:grid;gap:12px}
+
+/* советы */
+.advbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:14px;min-height:44px;border-radius:14px;font-weight:600;font-size:15.5px;background:var(--accent);color:var(--accent-ink)}
+.advhead{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:2px 0 12px}.advhead div{background:var(--soft);border-radius:12px;padding:8px 6px;text-align:center}
+.advhead span{display:block;font-size:11.5px;color:var(--muted)}.advhead b{font-size:17px;font-weight:600;font-family:var(--f-num)}
+.advtip{font-size:13.5px;line-height:1.4;padding:10px 12px;border-radius:12px;background:var(--accent-soft);margin-bottom:12px}
+.advmeal{border-radius:16px;margin-bottom:10px;background:var(--card);box-shadow:var(--shadow);position:relative;overflow:hidden}
+.advmeal::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:0 3px 3px 0;background:var(--c)}
+.advmeal .mh{display:flex;align-items:baseline;justify-content:space-between;padding:12px 14px 6px 16px}.advmeal .mh b{font-size:17px;font-weight:650;color:var(--c)}.advmeal .mh small{color:var(--muted);font-size:12.5px}
+.advit{display:flex;align-items:center;gap:10px;padding:8px 10px 8px 16px;border-top:1px solid var(--line)}
+.advit .n{flex:1;min-width:0}.advit .n b{display:block;font-weight:500;font-size:15px}.advit .n small{color:var(--muted);font-size:12.5px}
+.advit .k{font-size:14px;text-align:right;min-width:52px;font-family:var(--f-num)}.advit .k small{display:block;color:var(--muted);font-size:11px}
+.advsw{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:var(--accent);background:var(--soft);flex:none}
+.advsum{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted);padding:6px 2px 2px}.advsum b{color:var(--ink)}
+.advalt{display:flex;align-items:center;gap:12px;padding:12px 14px;border-top:1px solid var(--line);width:100%;text-align:left}.advalt:first-child{border-top:0}
+.advalt .n{flex:1}.advalt .n b{display:block;font-weight:500}.advalt .n small{color:var(--muted);font-size:12.5px}.advalt .k{text-align:right;font-size:14px;font-family:var(--f-num)}.advalt .k small{display:block;color:var(--muted);font-size:11px}
+.advalt .ck{width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--line);flex:none}.advalt.cur{background:var(--accent-soft)}.advalt.cur .ck{background:var(--accent)}
+.chip.off{background:color-mix(in srgb,var(--bad) 16%,transparent)!important;color:var(--bad)!important;text-decoration:line-through}
 .cups{display:flex;flex-wrap:wrap;gap:4px}
 .wsrc{font-size:12.5px;color:var(--muted);padding:0 16px 4px 66px;margin-top:-6px}
 .cups svg{width:22px;height:26px}
@@ -502,7 +520,7 @@ function viewDiary(){
       <div class="c"><b class="${left<0?'over':''}">${fmt(Math.abs(left))}</b><small>${left<0?'ккал сверх<br>нормы':(isPlan?'ккал осталось<br>по плану':'ккал<br>осталось')}</small></div></div>
     <div class="rside">${MEALS.map(([k,l])=>rk(`var(--${MC[k]})`,l,day?mealTot(day.m[k]).k:0)).join('')}<div class="rsep"></div>
       <div class="rk"><span>Норма</span><b>${fmt(cc.kcal)}</b></div>${ex?`<div class="rk"><span>Тренировки</span><b style="color:var(--ma)">+${fmt(bonus)}</b></div>`:''}</div></div>
-    <div class="macros">${mac('Белки',tot.p,cc.p,'var(--prot)')}${mac('Жиры',tot.f,cc.f,'var(--fat)')}${mac('Углеводы',tot.c,cc.c,'var(--carb)')}${mac('Клетчатка',tot.fb,cc.fb,'var(--fib)')}</div>
+    <div class="macros">${mac('Белки',tot.p,cc.p,'var(--prot)')}${mac('Жиры',tot.f,cc.f,'var(--fat)')}${mac('Углеводы',tot.c,cc.c,'var(--carb)')}${mac('Клетчатка',tot.fb,cc.fb,'var(--fib)')}</div>${s>=t?`<button class="advbtn" data-a="advOpen"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>Что съесть дальше?</button>`:''}
   </section>`;
   if(s===t){const ad=adaptDue();if(ad)h+=`<div class="banner"><span>Норму можно уточнить по вашим данным за 4 недели: ${ad.propose-(S.goal.adj||0)<0?'−':'+'}${fmt(Math.abs(ad.propose-(S.goal.adj||0)))} ккал.</span><button class="link" data-a="adGo">Посмотреть</button></div>`}
   const lb=S.settings.lastBackup, created=S.settings.created||t;
@@ -765,7 +783,7 @@ function viewMore(){
   return `<header class="top"><h1>Ещё</h1></header>
   <div class="sec menu">${it('planOpen','Расписать питание на период','Копировать день или шаблон на рейс, недели, месяцы')}${it('tplList','Шаблоны дней',S.templates.length+' '+plural(S.templates.length,'шаблон','шаблона','шаблонов'))}${it('calOpen','Календарь','Заполненные и запланированные дни')}</div>
   <div class="sec menu">${it('myFoods','Мои продукты',S.foods.length+' '+plural(S.foods.length,'продукт','продукта','продуктов'))}${it('rcpList','Рецепты и блюда',S.recipes.length+' '+plural(S.recipes.length,'рецепт','рецепта','рецептов'))}</div>
-  <div class="sec menu">${it('profOpen','Профиль','Пол, дата рождения, рост, активность')}${it('backupOpen','Резервная копия',S.settings.lastBackup?'последняя '+fDate(S.settings.lastBackup):'ещё не делалась')}${it('onlineOpen','Онлайн-базы продуктов','USDA и Open Food Facts')}${it('themeOpen','Оформление',themeLabel())}${it('installOpen','Установка на iPhone','')}${it('aboutOpen','Как считается','Формулы и источники')}</div>
+  <div class="sec menu">${it('advExOpen','Исключения в советах',(S.settings.advEx||[]).length+(S.settings.advTxt||[]).length?'исключено: '+((S.settings.advEx||[]).length+(S.settings.advTxt||[]).length):'Что не предлагать в «Что съесть дальше»')}${it('profOpen','Профиль','Пол, дата рождения, рост, активность')}${it('backupOpen','Резервная копия',S.settings.lastBackup?'последняя '+fDate(S.settings.lastBackup):'ещё не делалась')}${it('onlineOpen','Онлайн-базы продуктов','USDA и Open Food Facts')}${it('themeOpen','Оформление',themeLabel())}${it('installOpen','Установка на iPhone','')}${it('aboutOpen','Как считается','Формулы и источники')}</div>
   <div class="sec menu">${it('wipeOpen','Удалить все данные','')}</div>
   <p class="help" style="text-align:center;margin:18px 0">Рацион · версия ${APP_VERSION} · ${BASE.length} продуктов в базе<br>Данные только на этом телефоне</p>`;
 }
@@ -1032,6 +1050,140 @@ $('#impfile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)retu
 function addEntry(date,meal,e){const d=getDay(date,true);d.m[meal].push(e);save()}
 function findEntry(date,id){const d=S.days[date];if(!d)return null;for(const k in d.m){const i=d.m[k].findIndex(e=>e.id===id);if(i>=0)return{k,i,e:d.m[k][i]}}return null}
 function cleanDay(s){if(dayEmpty(s)&&S.days[s])delete S.days[s]}
+/* ---------- «Что съесть дальше»: план на остаток дня из простых продуктов ---------- */
+// cat: p — белок к обеду/ужину, c — гарнир, v — овощи, f — масло, sp — белковый перекус, fr — фрукты, n — орехи
+// по: 'k' равноценно по калориям, 'p' — по белку
+const ADV=[
+ {id:'chick',ru:'Куриное филе, запечённое',b:'Chicken breast, roasted, skinless',cat:'p',min:100,max:320},
+ {id:'turkey',ru:'Индейка, филе',sub:'сырой вес',b:'Turkey breast, raw',cat:'p',min:150,max:320},
+ {id:'pork',ru:'Свиная вырезка',sub:'сырой вес',b:'Pork tenderloin, raw',cat:'p',min:150,max:300},
+ {id:'beef',ru:'Говядина постная',sub:'сырой вес',b:'Beef, lean, raw',cat:'p',min:130,max:250},
+ {id:'cod',ru:'Треска',sub:'сырой вес',b:'Cod, raw',cat:'p',min:180,max:350},
+ {id:'salmon',ru:'Лосось, запечённый',b:'Salmon steak, baked',cat:'p',min:120,max:220,fat:1},
+ {id:'tuna',ru:'Тунец в собственном соку',b:'Tuna, canned in water',cat:'p',min:80,max:200,unit:['банка',100]},
+ {id:'eggs',ru:'Яйца',b:'Egg, whole',cat:'p',min:100,max:200,unit:['шт',50]},
+ {id:'lentil',ru:'Чечевица варёная',b:'Lentils, cooked',cat:'p',min:150,max:300},
+ {id:'beans',ru:'Фасоль варёная',b:'Kidney beans, cooked',cat:'p',min:150,max:300},
+ {id:'buck',ru:'Гречка варёная',b:'Buckwheat, cooked (hrișcă)',cat:'c',min:80,max:400},
+ {id:'rice',ru:'Рис варёный',b:'White rice, cooked',cat:'c',min:60,max:350},
+ {id:'potato',ru:'Картофель отварной',b:'Potatoes, boiled',cat:'c',min:100,max:450},
+ {id:'pasta',ru:'Макароны варёные',b:'Pasta, cooked',cat:'c',min:60,max:300},
+ {id:'bulgur',ru:'Булгур',sub:'сухой',b:'Bulgur, dry',cat:'c',min:30,max:80},
+ {id:'bread',ru:'Хлеб ржаной',b:'Rye bread',cat:'c',min:30,max:120,unit:['ломтик',35]},
+ {id:'oats',ru:'Овсянка',sub:'сухая',b:'Rolled oats, dry',cat:'c',min:30,max:90,brk:1},
+ {id:'tomcuc',ru:'Помидоры и огурцы',parts:[['Tomato',.5],['Cucumber',.5]],cat:'v',min:200,max:350},
+ {id:'broc',ru:'Брокколи',b:'Broccoli',cat:'v',min:150,max:300},
+ {id:'cauli',ru:'Цветная капуста',b:'Cauliflower',cat:'v',min:150,max:300},
+ {id:'zucc',ru:'Кабачок',b:'Zucchini',cat:'v',min:150,max:300},
+ {id:'carrot',ru:'Морковь',b:'Carrot',cat:'v',min:100,max:200},
+ {id:'spinach',ru:'Шпинат и салат',parts:[['Spinach',.5],['Lettuce',.5]],cat:'v',min:100,max:200},
+ {id:'mush',ru:'Шампиньоны',b:'Mushrooms, white (ciuperci)',cat:'v',min:150,max:300},
+ {id:'oil',ru:'Масло оливковое',b:'Olive oil',cat:'f',min:5,max:10,unit:['ч. л.',5]},
+ {id:'yog',ru:'Греческий йогурт 2%',b:'Greek yogurt 2%',cat:'sp',min:150,max:300},
+ {id:'cott',ru:'Творог 5%',b:'Cottage cheese 5% (brânză de vaci)',cat:'sp',min:120,max:250},
+ {id:'kefir',ru:'Кефир 1%',b:'Kefir 1% (chefir)',cat:'sp',min:200,max:400},
+ {id:'apple',ru:'Яблоко',b:'Apple',cat:'fr',min:150,max:200,unit:['шт',180]},
+ {id:'pear',ru:'Груша',b:'Pear',cat:'fr',min:150,max:200,unit:['шт',180]},
+ {id:'orange',ru:'Апельсин',b:'Orange',cat:'fr',min:150,max:200,unit:['шт',180]},
+ {id:'banana',ru:'Банан',b:'Banana',cat:'fr',min:100,max:140,unit:['шт',120]},
+ {id:'kiwi',ru:'Киви',b:'Kiwi',cat:'fr',min:75,max:150,unit:['шт',75]},
+ {id:'berries',ru:'Клубника',b:'Strawberries',cat:'fr',min:150,max:250},
+ {id:'walnut',ru:'Грецкие орехи',b:'Walnuts',cat:'n',min:15,max:25,fat:1}
+];
+const ADV_GROUPS=[['Белок','p'],['Гарнир','c'],['Овощи','v'],['Перекус','sp'],['Фрукты','fr'],['Другое','n','f']];
+const advEx=()=>S.settings.advEx||(S.settings.advEx=[]);
+const advTxt=()=>S.settings.advTxt||(S.settings.advTxt=[]);
+// пищевая ценность на 1 г и ссылки на базу
+function advNut(a){if(a._n)return a._n;const parts=a.parts||[[a.b,1]];const n={k:0,p:0,f:0,c:0,fb:0,refs:[]};
+ for(const [nm,sh] of parts){const i=BASE.findIndex(x=>x.n===nm);if(i<0)return null;const x=BASE[i].x;n.k+=x.k*sh/100;n.p+=x.p*sh/100;n.f+=x.f*sh/100;n.c+=x.c*sh/100;n.fb+=(x.fb||0)*sh/100;n.refs.push([BASE[i],sh])}
+ return a._n=n}
+function advOk(a,eaten){if(advEx().includes(a.id)||!advNut(a))return false;const t=(a.ru+' '+(a.b||'')).toLowerCase();if(advTxt().some(w=>w&&t.includes(w.toLowerCase())))return false;return !eaten.has(a.id)}
+function advRnd(seed){let s=(seed*9301+49297)%233280||7;return()=>(s=(s*9301+49297)%233280)/233280}
+const r5=g=>Math.max(5,Math.round(g/5)*5);
+function advPortion(a,g){g=Math.max(a.min,Math.min(a.max,g));if(a.unit){const u=a.unit[1];const n=Math.max(1,Math.round(g/u));if(a.cat!=='f'&&a.cat!=='fr')return n*u;return a.cat==='fr'?u:n*u}return r5(g)}
+function advIt(a,g){const n=advNut(a);return{id:a.id,g,k:n.k*g,p:n.p*g,f:n.f*g,c:n.c*g,fb:n.fb*g}}
+function advLabel(a,g){if(a.unit){const n=Math.round(g/a.unit[1]);return a.cat==='f'?`${n} ${a.unit[0]} · ${g} г`:`${n} ${a.unit[0]} · ${g} г`}return `${g} г${a.sub?' · '+a.sub:''}`}
+function advPlan(s,seed){
+ const cc=calc(s),tot=dayTot(s),norm=dayNorm(s,cc),day=S.days[s];
+ const left={k:norm-tot.k,p:cc.p-tot.p,f:cc.f-tot.f,c:cc.c-tot.c,fb:cc.fb-tot.fb};
+ const res={left,meals:[],msg:null,tip:null};
+ if(left.k<150){res.msg=left.k<0?'Норма на сегодня уже превышена. Если голодно — овощи, огурцы, кефир 1%: почти без калорий.':'Норма почти закрыта. Если голодно — овощи, огурцы или стакан кефира 1%.';return res}
+ // какие приёмы ещё пустые
+ const isToday=s===today(),hr=isToday?new Date().getHours():8;
+ const empty=k=>!day||!day.m[k].length;let mk=[];
+ if(empty('b')&&hr<11)mk.push('b');if(empty('l')&&hr<17)mk.push('l');if(empty('s')&&hr<20)mk.push('s');if(empty('d'))mk.push('d');
+ if(!mk.length)mk=hr<20?['s']:['d'];
+ if(left.k<380)mk=[mk.includes('d')&&hr>=18?'d':'s'];
+ else if(left.k<750&&mk.length>1){const main=mk.includes('d')?'d':mk.find(k=>k!=='s')||mk[0];mk=left.k>520&&mk.includes('s')&&main!=='s'?[main,'s']:[main]}
+ else if(left.k<1000&&mk.length>2)mk=mk.filter(k=>k!=='b').slice(-2);
+ const W={b:25,l:35,s:15,d:25};const sw=mk.reduce((a,k)=>a+W[k],0);
+ const buf=Math.min(120,Math.max(40,left.k*.07));const kT=left.k-buf;const pT=Math.max(0,left.p);
+ const eaten=new Set();if(day)for(const k in day.m)for(const e of day.m[k]){const a=ADV.find(x=>x.b&&x.b===e.n);if(a)eaten.add(a.id)}
+ const rnd=advRnd(seed+1),pick=(cat,ex,f)=>{let l=ADV.filter(a=>a.cat===cat&&advOk(a,eaten)&&!ex.has(a.id)&&(!f||f(a)));if(!l.length)l=ADV.filter(a=>a.cat===cat&&advOk(a,new Set())&&(!f||f(a)));return l.length?l[Math.floor(rnd()*l.length)]:null};
+ const used=new Set(),lowFat=left.f<25,lowCarb=left.c*4<kT*.42;
+ for(const m of mk){const mK=kT*W[m]/sw,mP=pT*W[m]/sw;const items=[];
+  const add=(a,g)=>{if(!a)return;used.add(a.id);items.push(advIt(a,advPortion(a,g)))};
+  if(m==='s'){const sp=pick('sp',used);if(sp)add(sp,mP*.9/advNut(sp).p);const rest=mK-items.reduce((x,i)=>x+i.k,0);
+   if(rest>60){const fr=pick('fr',used);if(fr)add(fr,fr.unit?fr.unit[1]:150)}}
+  else if(m==='b'){const usePorr=rnd()<.5;
+   if(usePorr){const o=ADV.find(a=>a.id==='oats');const y=pick('sp',used);if(y)add(y,mP*.6/advNut(y).p);const fr=pick('fr',used);if(fr)add(fr,fr.unit?fr.unit[1]:150);
+    if(advOk(o,new Set())){const r=mK-items.reduce((x,i)=>x+i.k,0);add(o,r/advNut(o).k)}}
+   else{const e=ADV.find(a=>a.id==='eggs');if(advOk(e,new Set()))add(e,Math.min(150,mP*.6/advNut(e).p));const v=pick('v',used,a=>['tomcuc','spinach'].includes(a.id));if(v)add(v,150);
+    const br=ADV.find(a=>a.id==='bread');if(advOk(br,new Set())){const r=mK-items.reduce((x,i)=>x+i.k,0);if(r>50)add(br,r/advNut(br).k)}}}
+  else{const p=pick('p',used,a=>!(lowFat&&a.fat)&&!(lowCarb&&(a.id==='lentil'||a.id==='beans')));if(p)add(p,mP*.88/advNut(p).p);const v=pick('v',used);if(v)add(v,m==='d'?250:220);
+   const oil=ADV.find(a=>a.id==='oil');if(!lowFat&&advOk(oil,new Set()))add(oil,m==='l'?7:5);
+   const r=mK-items.reduce((x,i)=>x+i.k,0);const minC=m==='d'?70:110;
+   if(r>minC){const c=pick('c',used,a=>!a.brk);if(c)add(c,r/advNut(c).k)}}
+  res.meals.push({m,items})}
+ // добор белка: если до цели по белку далеко — увеличиваем белковые продукты (в пределах порций)
+ {const t0=res.meals.reduce((t,M)=>M.items.reduce((u,i)=>u+i.p,t),0);let need=pT*.9-t0;if(need>5){const pi=[];for(const M of res.meals)for(const it of M.items){const a=ADV.find(x=>x.id===it.id);if(a.cat==='p'||a.cat==='sp')pi.push([it,a])}
+  for(const [it,a] of pi){if(need<=0)break;const ng=advPortion(a,it.g+need/pi.length/advNut(a).p);const gain=(ng-it.g)*advNut(a).p;if(gain>0){Object.assign(it,advIt(a,ng));need-=gain}}}}
+ // жиры: не выходить за остаток — сначала убираем масло и орехи, потом урезаем жирный белок
+ {const sf=()=>res.meals.reduce((t,M)=>M.items.reduce((u,i)=>u+i.f,t),0);let over=sf()-(Math.max(0,left.f)+3);
+  for(const id of ['oil','walnut'])for(const M of res.meals){if(over<=0)break;const i=M.items.findIndex(it=>it.id===id);if(i>=0){over-=M.items[i].f;M.items.splice(i,1)}}
+  if(over>0)for(const M of res.meals)for(const it of M.items){if(over<=0)break;const a=ADV.find(x=>x.id===it.id),fd=advNut(a).f;if(fd<.04||a.cat==='v')continue;
+   const ng=advPortion(a,it.g-over/fd);const d=(it.g-ng)*fd;if(d>0){Object.assign(it,advIt(a,ng));over-=d}}
+  res.fatOver=over>2}
+ // углеводы: не выходить за остаток — урезаем гарниры, потом фрукты
+ {const sc=()=>res.meals.reduce((t,M)=>M.items.reduce((u,i)=>u+i.c,t),0);let over=sc()-(Math.max(0,left.c)+8);
+  for(const cat of ['c','fr','sp'])for(const M of res.meals)for(let k=M.items.length-1;k>=0;k--){if(over<=0)break;const it=M.items[k],a=ADV.find(x=>x.id===it.id);if(a.cat!==cat)continue;const cd=advNut(a).c;if(cd<.02)continue;
+   const want=it.g-over/cd;if(want<a.min*.8&&cat!=='sp'){over-=it.c;M.items.splice(k,1)}else{const ng=advPortion(a,want);const d=(it.g-ng)*cd;if(d>0){Object.assign(it,advIt(a,ng));over-=d}}}}
+ // подгонка: если вышли за остаток — урезаем гарниры, потом белок
+ const sum=()=>res.meals.reduce((t,M)=>M.items.reduce((u,i)=>(u.k+=i.k,u.p+=i.p,u.f+=i.f,u.c+=i.c,u.fb+=i.fb,u),t),{k:0,p:0,f:0,c:0,fb:0});
+ for(const cat of ['c','fr','p','sp']){let t=sum();if(t.k<=left.k-buf*.5)break;for(const M of res.meals)for(const it of M.items){const a=ADV.find(x=>x.id===it.id);if(a.cat!==cat)continue;
+  const over=t.k-(left.k-buf);if(over<=0)break;const ng=advPortion(a,it.g-over/advNut(a).k);Object.assign(it,advIt(a,ng));t=sum()}}
+ {let t=sum(),guard=0;while(t.k>left.k-20&&guard++<12){let worst=null;for(const M of res.meals)for(const it of M.items){const a=ADV.find(x=>x.id===it.id);const sc=(a.cat==='c'||a.cat==='fr'||a.cat==='n'||a.cat==='f'?2:a.cat==='v'?0:1)*1000+it.k-it.p*4;if(!worst||sc>worst.sc)worst={it,M,sc}}
+  if(!worst)break;worst.M.items.splice(worst.M.items.indexOf(worst.it),1);t=sum()}res.meals=res.meals.filter(M=>M.items.length)}
+ res.tot=sum();res.buf=left.k-res.tot.k;
+ const P=tot.p,K=tot.k;if(res.fatOver)res.tip='Жиров на сегодня осталось мало, в плане их чуть больше. Нажмите «Ещё вариант» или замените рыбу и яйца на курицу или индейку.';else if(res.buf>400)res.tip=`План покрывает ${fmt(res.tot.k)} из ${fmt(left.k)} ккал — порции ограничены разумным размером. Если голодно, добавьте ещё перекус.`;else if(left.p>40&&P<K/1000*55)res.tip=`Белка пока мало — ${fmt(P)} г. План сделан с упором на белок.`;else if(left.fb>12)res.tip=`Клетчатки не хватает ${fmt(left.fb)} г — в плане больше овощей.`;else if(left.f<10)res.tip='Жиров почти не осталось — в плане нет масла, рыбы пожирнее и орехов.';
+ return res}
+function advAlts(id,g){const a=ADV.find(x=>x.id===id),n=advNut(a);const by=a.cat==='p'||a.cat==='sp'?'p':'k';const val=n[by]*g;
+ return ADV.filter(x=>x.cat===a.cat&&x.id!==id&&!x.brk&&advOk(x,new Set())).map(x=>{const xn=advNut(x);const xg=advPortion(x,xn[by]>0?val/xn[by]:g);return{x,g:xg,k:xn.k*xg,p:xn.p*xg}}).sort((u,v)=>Math.abs(u.k-n.k*g)-Math.abs(v.k-n.k*g)).slice(0,5)}
+
+const ICsw='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h13l-3-3M20 17H7l3 3"/></svg>';
+const MEALC={b:'--mb',l:'--ml',d:'--md',s:'--ms'};
+function advSum(pl){pl.tot=pl.meals.reduce((t,M)=>M.items.reduce((u,i)=>(u.k+=i.k,u.p+=i.p,u.f+=i.f,u.c+=i.c,u.fb+=i.fb,u),t),{k:0,p:0,f:0,c:0,fb:0});pl.buf=pl.left.k-pl.tot.k}
+SH.adv={full:1,title:'Что съесть дальше',body:st=>{const pl=st.plan,L=pl.left;
+ let h=`<div class="advhead"><div><span>осталось</span><b>${fmt(Math.max(0,L.k))}</b></div><div><span>белок</span><b>${fmt(Math.max(0,L.p))} г</b></div><div><span>жиры</span><b>${fmt(Math.max(0,L.f))} г</b></div><div><span>углев.</span><b>${fmt(Math.max(0,L.c))} г</b></div></div>`;
+ if(pl.msg)return h+`<div class="advtip"><span>${pl.msg}</span></div>`;
+ if(pl.tip)h+=`<div class="advtip"><span>${pl.tip}</span></div>`;
+ pl.meals.forEach((M,mi)=>{const mk=M.items.reduce((t,i)=>(t.k+=i.k,t.p+=i.p,t),{k:0,p:0});
+  h+=`<div class="advmeal" style="--c:var(${MEALC[M.m]})"><div class="mh"><b>${MEALS.find(x=>x[0]===M.m)[1]}</b><small>≈ ${fmt(mk.k)} ккал · Б ${fmt(mk.p)}</small></div>`;
+  M.items.forEach((it,ii)=>{const a=ADV.find(x=>x.id===it.id);h+=`<div class="advit"><div class="n"><b>${esc(a.ru)}</b><small>${advLabel(a,it.g)}</small></div><div class="k">${fmt(it.k)}<small>Б ${fmt(it.p)} г</small></div><button class="advsw" data-a="advSwap" data-v="${mi}:${ii}" aria-label="Заменить">${ICsw}</button></div>`});
+  h+='</div>'});
+ h+=`<div class="advsum"><span>План: <b>${fmt(pl.tot.k)} ккал</b> · Б ${fmt(pl.tot.p)} · Ж ${fmt(pl.tot.f)} · У ${fmt(pl.tot.c)} · Кл ${fmt(pl.tot.fb)}</span><span>запас <b>${fmt(Math.max(0,pl.buf))}</b></span></div>
+ <p class="help" style="margin:8px 0 0">Граммы — для готового продукта, если не указано «сырой вес» или «сухой». Неподходящее можно исключить: «Ещё → Исключения в советах».</p>`;
+ return h},
+ foot:st=>st.plan.msg?`<div class="btns" style="margin:0"><button class="btn" data-a="close">Понятно</button></div>`:`<div class="btns two" style="margin:0"><button class="btn" data-a="advMore">Ещё вариант</button><button class="btn pri" data-a="advAdd">Добавить в план</button></div>`};
+SH.advAlt={title:st=>'Заменить: '+ADV.find(x=>x.id===st.id).ru.toLowerCase(),body:st=>{const a=ADV.find(x=>x.id===st.id),n=advNut(a);const by=a.cat==='p'||a.cat==='sp';
+ const row=(x,g,k,cur,i)=>`<button class="advalt${cur?' cur':''}" ${cur?'data-a="close"':`data-a="advAltPick" data-v="${i}"`}><span class="ck"></span><div class="n"><b>${esc(x.ru)}</b><small>${advLabel(x,g)}${cur?' · сейчас в плане':''}</small></div><div class="k">${fmt(k)}<small>ккал</small></div></button>`;
+ return `<p class="help" style="margin:0 0 10px">Равноценная замена ${by?'по белку':'по калориям'}. Остальной план не меняется.</p><div class="sec list" style="margin-top:0">${row(a,st.g,n.k*st.g,1)}${st.alts.map((o,i)=>row(o.x,o.g,o.k,0,i)).join('')}</div>`}};
+SH.advEx={full:1,title:'Исключения в советах',body:()=>{const ex=advEx();
+ let h=`<p class="help" style="margin-top:0">Отмеченное не предлагается в «Что съесть дальше». Нажмите ещё раз, чтобы вернуть.</p>`;
+ for(const [t,...cats] of ADV_GROUPS){const l=ADV.filter(a=>cats.includes(a.cat));h+=`<div class="lab" style="margin-top:14px">${t}</div><div class="chips" style="margin-top:6px">${l.map(a=>`<button class="chip${ex.includes(a.id)?' off':''}" data-a="advExT" data-v="${a.id}">${esc(a.ru)}</button>`).join('')}</div>`}
+ const tx=advTxt();h+=`<div class="lab" style="margin-top:16px">Своё слово</div><p class="help" style="margin:2px 0 6px">Например «лук» или «рыба» — всё, где оно встречается в названии, будет исключено.</p>
+ ${tx.length?`<div class="chips" style="margin-bottom:8px">${tx.map((w,i)=>`<button class="chip off" data-a="advTxtDel" data-v="${i}">${esc(w)} ✕</button>`).join('')}</div>`:''}
+ <div class="grid2" style="grid-template-columns:1fr auto"><input class="inp" id="advw" placeholder="Слово"><button class="btn" data-a="advTxtAdd">Добавить</button></div>`;return h}};
 const A={
   close:()=>closeSheet(),
   tab:el=>{V.tab=el.dataset.v;render();window.scrollTo(0,0)},
@@ -1125,6 +1277,16 @@ const A={
   gRate:el=>{S.goal.rate=+el.dataset.v;save();render()},
   gEat:el=>{S.goal.eatBack=+el.dataset.v;save();render()},
   gWater:el=>{S.goal.water=+el.dataset.v;save();render()},
+  advOpen:()=>{const st={d:V.date,seed:Date.now()%100000};st.plan=advPlan(st.d,st.seed);openSheet('adv',st)},
+  advMore:()=>{const o=topS();o.st.seed++;o.st.plan=advPlan(o.st.d,o.st.seed);drawSheet(o)},
+  advSwap:el=>{const o=topS();const [mi,ii]=el.dataset.v.split(':').map(Number);const it=o.st.plan.meals[mi].items[ii];openSheet('advAlt',{id:it.id,g:it.g,mi,ii,alts:advAlts(it.id,it.g),parent:o})},
+  advAltPick:el=>{const o=topS(),st=o.st,alt=st.alts[+el.dataset.v],P=st.parent;P.st.plan.meals[st.mi].items[st.ii]=advIt(alt.x,alt.g);advSum(P.st.plan);closeSheet();drawSheet(P)},
+  advAdd:()=>{const o=topS(),st=o.st;let n=0;for(const M of st.plan.meals)for(const it of M.items){const a=ADV.find(x=>x.id===it.id);for(const [b,sh] of advNut(a).refs){addEntry(st.d,M.m,{id:uid(),n:b.n,g:r1(it.g*sh),x:clone(b.x),src:'base',ref:b.id});n++}}
+    closeSheet();render();toast('В план добавлено: '+n+' '+plural(n,'продукт','продукта','продуктов'))},
+  advExOpen:()=>openSheet('advEx',{}),
+  advExT:el=>{const ex=advEx(),id=el.dataset.v,i=ex.indexOf(id);if(i<0)ex.push(id);else ex.splice(i,1);save();drawSheet(topS())},
+  advTxtAdd:()=>{const v=(document.getElementById('advw').value||'').trim();if(!v)return;advTxt().push(v);save();drawSheet(topS())},
+  advTxtDel:el=>{advTxt().splice(+el.dataset.v,1);save();drawSheet(topS())},
   adAccept:el=>{S.goal.adj=+el.dataset.v;S.goal.adjAt=today();(S.goal.adjHist=S.goal.adjHist||[]).push({d:today(),adj:S.goal.adj});save();render();toast('Норма обновлена по вашим данным')},
   adSkip:()=>{S.goal.adjAt=today();save();render();toast('Напомню через неделю')},
   adReset:()=>{S.goal.adj=0;S.goal.adjAt=today();save();render();toast('Поправка сброшена')},
