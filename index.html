@@ -338,7 +338,7 @@ const IC={
 
 /* ========== хранилище ========== */
 const KEY='racion.v1';
-const APP_VERSION='23';
+const APP_VERSION='24';
 function blank(){return{v:1,profile:null,goal:{rate:0.5,target:null,prot:1.8,fatPct:28,ov:{},eatBack:100,water:2000},voyage:null,weights:{},days:{},foods:[],recipes:[],templates:[],settings:{usdaKey:'',lastBackup:null,created:today(),theme:{mode:'system',dark:'20:00',light:'07:00'}}}}
 function normalize(o){const b=blank();o=Object.assign(b,o||{});o.goal=Object.assign(blank().goal,o.goal||{});o.goal.ov=o.goal.ov||{};o.settings=Object.assign(blank().settings,o.settings||{});o.settings.theme=Object.assign(blank().settings.theme,o.settings.theme||{});
   for(const k in o.days){const d=o.days[k];d.m=Object.assign({b:[],l:[],d:[],s:[]},d.m||{});d.ex=d.ex||[]}return o}
@@ -360,12 +360,13 @@ function dayEx(s){const d=S.days[s];return d?d.ex.reduce((a,e)=>a+(e.kcal||0),0)
 function hasFood(s){const d=S.days[s];return !!d&&Object.values(d.m).some(a=>a.length)}
 function dayEmpty(s){const d=S.days[s];return !d||(!hasFood(s)&&!d.ex.length&&!d.wt)}
 // Вода: отмеченные стаканы + чай, кофе и минеральная вода из дневника (по объёму, 1 г = 1 мл)
-const DRINK_IDS=new Set(['b138','b139','b430','b431','b432','b433','b434','b435','b436','b437','b438','b439','b440','b441','b442','b443','b444','b507','b508','b509','b517']);
-const HIMIN_IDS=new Set(['b517']);
+// напитки из базы узнаём по названию, а не по номеру позиции: номера сдвигаются, если продукт добавлен в середину списка
+const DRINK_NAMES=new Set(["Black coffee", "Tea, unsweetened", "Espresso", "Ristretto", "Americano", "Filter coffee", "Cappuccino", "Latte", "Flat white", "Macchiato", "Cortado", "Latte with syrup", "Mocha", "Raf coffee", "Oat milk cappuccino", "Iced latte", "Frappé / Frappuccino", "Tea with sugar (1 tsp per cup)", "Green tea, unsweetened", "Mineral water", "Borjomi mineral water (medicinal-table, high sodium)"]);
+const HIMIN_NAMES=new Set(["Borjomi mineral water (medicinal-table, high sodium)"]);
 const RX_DRINK_IN=/\b(tea|coffee|espresso|americano|cappuccino|latte|ceai|cafea|borjomi)\b|чай|кофе|минерал|боржоми|mineral water|apă minerală|apa minerala/i;
 const RX_DRINK_OUT=/ice tea|iced tea|lipton|tonic|3-in-1|liqueur|ликёр|ликер|cake|торт|печень|cookie|candy|конфет|tiramisu|тирамису/i;
-function isDrink(e){if(e.src==='quick')return false;if(e.src==='base'&&e.ref&&/^b\d+$/.test(e.ref))return DRINK_IDS.has(e.ref);const n=e.n||'';return RX_DRINK_IN.test(n)&&!RX_DRINK_OUT.test(n)}
-function dayDrinks(s){const d=S.days[s];let ml=0,hi=0;if(d)for(const a of Object.values(d.m))for(const e of a){if(!(e.g>0)||!isDrink(e))continue;ml+=e.g;if(e.src==='base'&&HIMIN_IDS.has(e.ref)||/borjomi|боржоми/i.test(e.n||''))hi+=e.g}return{ml,hi}}
+function isDrink(e){if(e.src==='quick')return false;if(e.src==='base'&&e.ref&&/^b\d+$/.test(e.ref))return DRINK_NAMES.has(e.n);const n=e.n||'';return RX_DRINK_IN.test(n)&&!RX_DRINK_OUT.test(n)}
+function dayDrinks(s){const d=S.days[s];let ml=0,hi=0;if(d)for(const a of Object.values(d.m))for(const e of a){if(!(e.g>0)||!isDrink(e))continue;ml+=e.g;if(e.src==='base'&&HIMIN_NAMES.has(e.n)||/borjomi|боржоми/i.test(e.n||''))hi+=e.g}return{ml,hi}}
 function dayWater(s){const d=S.days[s];return (d&&d.wt||0)+dayDrinks(s).ml}
 function wKeys(){return Object.keys(S.weights).sort()}
 function weightOn(s){const ks=wKeys();let v=null;for(const k of ks){if(k<=s)v=S.weights[k];else break}if(v==null&&ks.length)v=S.weights[ks[0]];return v}
